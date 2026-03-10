@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --jungle-green: #1a4d2e;
+            --box-yellow: #cddc39;
+            --text-yellow: #ffff00;
+        }
+
+        body {
+            background-color: var(--jungle-green);
+           
+            background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+            background-size: 40px 100%;
+            font-family: 'Luckiest Guy', cursive;
+            margin: 0;
+            padding: 40px;
+            color: var(--text-yellow);
+        }
+
+     
+        .header-title {
+            font-size: 60px;
+            text-shadow: 4px 4px black;
+            margin: 0 0 40px 0;
+            letter-spacing: 2px;
+        }
+
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-bottom: 60px;
+        }
+
+        .stat-card {
+            text-align: center;
+        }
+
+        .stat-label {
+            color: black;
+            font-size: 32px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .stat-value {
+            background: var(--box-yellow);
+            color: var(--jungle-green);
+            border: 4px solid black;
+            border-radius: 20px;
+            padding: 40px;
+            font-size: 50px;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.2);
+        }
+
+        
+        .popular-tours-section {
+            background: rgba(0, 0, 0, 0.25);
+            margin: 0 -40px; 
+            padding: 40px;
+        }
+
+        .section-title {
+            font-size: 45px;
+            text-shadow: 3px 3px black;
+            margin: 0 0 30px 40px;
+        }
+
+        .tour-circles-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .tour-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 5px solid var(--box-yellow);
+            overflow: hidden;
+            background: black;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .tour-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="header-title">DASHBOARD</h1>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">TOTAL USERS</span>
+            <div class="stat-value">117</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">TOTAL BOOKINGS</span>
+            <div class="stat-value">0</div>
+        </div>
+    </div>
+
+    <section class="popular-tours-section">
+        <h2 class="section-title">MOST POPULAR TOURS</h2>
+        <div class="tour-circles-container">
+            <div class="tour-circle"><img src="bluehole.jpg" alt="Tour 1"></div>
+            <div class="tour-circle"><img src="ruins.jpg" alt="Tour 2"></div>
+            <div class="tour-circle"><img src="cave.jpg" alt="Tour 3"></div>
+            <div class="tour-circle"><img src="beach.jpg" alt="Tour 4"></div>
+        </div>
+    </section>
+
+</body>
+</html>

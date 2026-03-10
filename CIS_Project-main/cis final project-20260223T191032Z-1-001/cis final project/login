@@ -1,0 +1,13 @@
+<?php
+
+$email = $_POST['email'];
+$password = $_POST['password'];
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo "Invalid email format";
+    exit();
+}
+
+echo "Login request received.";
+
+?>
