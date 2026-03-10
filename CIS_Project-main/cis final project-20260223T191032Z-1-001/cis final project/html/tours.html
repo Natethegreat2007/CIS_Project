@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Tours - Jungle UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --jungle-green: #1a4d2e;
+            --card-bg: rgba(0, 0, 0, 0.2);
+            --accent-yellow: #ffff00;
+            --btn-yellow: #cddc39;
+        }
+
+        body {
+            background-color: var(--jungle-green);
+            /* Vertical stripe background to match other pages */
+            background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+            background-size: 40px 100%;
+            font-family: 'Luckiest Guy', cursive;
+            margin: 0;
+            padding: 40px;
+            color: white;
+        }
+
+        /* --- HEADER SECTION --- */
+        header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 60px;
+            color: var(--accent-yellow);
+            text-shadow: 4px 4px black;
+            margin: 0;
+        }
+
+        .filter-btn {
+            background: white;
+            color: black;
+            border-radius: 50px;
+            padding: 5px 20px;
+            font-family: 'Luckiest Guy';
+            font-size: 18px;
+            border: 2px solid black;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- TOURS GRID --- */
+        .tours-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .tour-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: transform 0.2s;
+        }
+
+        .tour-card:hover {
+            transform: translateY(-5px);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .tour-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 4px solid var(--btn-yellow);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .tour-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tour-info-text {
+            color: white;
+            font-size: 18px;
+            line-height: 1.4;
+        }
+
+        .tour-name {
+            font-size: 28px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* --- BUTTON STYLE --- */
+        .book-btn {
+            background-color: var(--btn-yellow);
+            color: var(--jungle-green);
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            font-family: 'Luckiest Guy';
+            font-size: 32px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 6px 0 #689f38;
+            transition: 0.1s;
+        }
+
+        .book-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #689f38;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="page-title">TOURS</h1>
+        <button class="filter-btn">FILTERS <span>▼</span></button>
+    </header>
+
+    <div class="tours-grid">
+        <div class="tour-card">
+            <div class="card-top">
+                <div class="tour-circle">
+                    <img src="../images/tour1.jpg" alt="Tour">
+                </div>
+                <div class="tour-info-text">
+                    <span class="tour-name">TOUR NAME</span>
+                    TOUR DESCRIPTION<br>TOUR DESCRIPTION<br>TOUR DESCRIPTION
+                </div>
+            </div>
+            <button class="book-btn">BOOK NOW</button>
+        </div>
+
+        <div class="tour-card">
+            <div class="card-top">
+                <div class="tour-circle">
+                    <img src="../images/tour2.jpg" alt="Tour">
+                </div>
+                <div class="tour-info-text">
+                    <span class="tour-name">TOUR NAME</span>
+                    TOUR DESCRIPTION<br>TOUR DESCRIPTION<br>TOUR DESCRIPTION
+                </div>
+            </div>
+            <button class="book-btn">BOOK NOW</button>
+        </div>
+
+        <div class="tour-card">
+            <div class="card-top">
+                <div class="tour-circle">
+                    <img src="../images/tour3.jpg" alt="Tour">
+                </div>
+                <div class="tour-info-text">
+                    <span class="tour-name">TOUR NAME</span>
+                    TOUR DESCRIPTION<br>TOUR DESCRIPTION<br>TOUR DESCRIPTION
+                </div>
+            </div>
+            <button class="book-btn">BOOK NOW</button>
+        </div>
+
+        <div class="tour-card">
+            <div class="card-top">
+                <div class="tour-circle">
+                    <img src="../images/tour4.jpg" alt="Tour">
+                </div>
+                <div class="tour-info-text">
+                    <span class="tour-name">TOUR NAME</span>
+                    TOUR DESCRIPTION<br>TOUR DESCRIPTION<br>TOUR DESCRIPTION
+                </div>
+            </div>
+            <button class="book-btn">BOOK NOW</button>
+        </div>
+
+        <div class="tour-card">
+            <div class="card-top">
+                <div class="tour-circle">
+                    <img src="../images/tour5.jpg" alt="Tour">
+                </div>
+                <div class="tour-info-text">
+                    <span class="tour-name">TOUR NAME</span>
+                    TOUR DESCRIPTION<br>TOUR DESCRIPTION<br>TOUR DESCRIPTION
+                </div>
+            </div>
+            <button class="book-btn">BOOK NOW</button>
+        </div>
+
+        <div class="tour-card">
+            <div class="card-top">
+                <div class="tour-circle">
+                    <img src="../images/tour6.jpg" alt="Tour">
+                </div>
+                <div class="tour-info-text">
+                    <span class="tour-name">TOUR NAME</span>
+                    TOUR DESCRIPTION<br>TOUR DESCRIPTION<br>TOUR DESCRIPTION
+                </div>
+            </div>
+            <button class="book-btn">BOOK NOW</button>
+        </div>
+    </div>
+
+</body>
+</html>
