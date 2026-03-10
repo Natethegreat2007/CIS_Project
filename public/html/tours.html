@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tourist Tome - Tours</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: #1a4d2e;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+    background-size: 40px 100%;
+    font-family: 'Luckiest Guy', cursive;
+    color: #ffff00;
+    min-height: 100vh;
+}
+
+
+nav {
+    position: sticky; top: 0; z-index: 200;
+    background: #0d3320;
+    border-bottom: 4px solid #fbc02d;
+    display: flex; align-items: center;
+    padding: 0 30px; height: 70px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.nav-logo {
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none; margin-right: 28px; flex-shrink: 0;
+}
+.nav-logo img { height: 46px; width: auto; }
+.nav-logo span {
+    font-family: 'Luckiest Guy';
+    font-size: 1.55rem; color: yellow;
+    text-shadow: 2px 2px black; letter-spacing: 2px;
+}
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a {
+    color: rgba(255,255,0,0.6);
+    text-decoration: none;
+    font-family: 'Luckiest Guy';
+    font-size: 1rem; letter-spacing: 1px;
+    padding: 8px 15px; border-radius: 10px;
+    transition: 0.2s;
+}
+.nav-links a:hover, .nav-links a.active {
+    color: yellow; background: rgba(255,255,0,0.12);
+}
+.nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.nav-search {
+    background: white; border-radius: 50px;
+    border: 3px solid black; padding: 5px 16px;
+    display: flex; align-items: center; gap: 6px;
+}
+.nav-search input {
+    border: none; outline: none;
+    font-family: 'Luckiest Guy'; font-size: 0.85rem;
+    width: 145px; color: #1a4d2e; background: transparent;
+}
+.nav-user {
+    background: rgba(255,255,0,0.12);
+    border: 2px solid #fbc02d; border-radius: 20px;
+    padding: 4px 14px; font-size: 0.8rem;
+    color: yellow; letter-spacing: 1px;
+}
+.nav-logout {
+    background: yellow; color: #1a4d2e;
+    border: none; border-radius: 12px;
+    padding: 8px 18px; font-family: 'Luckiest Guy';
+    font-size: 0.95rem; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 4px 0 #888800;
+    transition: 0.1s;
+}
+.nav-logout:hover { background: #eeee00; }
+.nav-logout:active { transform: translateY(3px); box-shadow: 0 1px 0 #888800; }
+
+.page-wrap { max-width: 1280px; margin: 0 auto; padding: 36px 40px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+.page-title { font-size: 60px; text-shadow: 4px 4px black; margin-bottom: 30px; letter-spacing: 2px; }
+.section-title { font-size: 36px; text-shadow: 3px 3px black; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,0,0.2); padding-bottom: 8px; }
+.back-nav { font-size: 45px; color: orange; cursor: pointer; display: inline-block; margin-bottom: 12px; text-decoration: none; transition: transform 0.2s; }
+.back-nav:hover { transform: translateX(-8px); }
+.input-field {
+    width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d;
+    border-radius: 20px; padding: 12px 18px; color: #ffff00;
+    font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
+    box-sizing: border-box; transition: border-color 0.2s;
+}
+.input-field:focus { border-color: yellow; }
+.input-field::placeholder { color: rgba(255,255,0,0.4); }
+.input-field option { background: #1a4d2e; }
+.ybtn {
+    background: #cddc39; color: #1a4d2e; border: none;
+    border-radius: 14px; padding: 13px 30px;
+    font-family: 'Luckiest Guy'; font-size: 20px; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 5px 0 #689f38; transition: 0.1s;
+}
+.ybtn:hover { background: #ddef48; }
+.ybtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #689f38; }
+.alert { padding: 12px 18px; border-radius: 14px; font-size: 17px; margin-bottom: 16px; display: none; }
+.alert-ok  { background: rgba(205,220,57,0.12); border: 2px solid #cddc39; color: #cddc39; }
+.alert-err { background: rgba(255,82,82,0.12);  border: 2px solid #ff5252;  color: #ff5252; }
+
+header { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; }
+.filter-btn {
+    background: white; color: black; border-radius: 50px;
+    padding: 6px 22px; font-family: 'Luckiest Guy';
+    font-size: 18px; border: 2px solid black; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+}
+.tours-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 28px; }
+.tour-card {
+    background: rgba(0,0,0,0.2); border-radius: 15px;
+    padding: 25px; display: flex; flex-direction: column; gap: 18px;
+    transition: 0.2s; border: 2px solid transparent;
+}
+.tour-card:hover { transform: translateY(-5px); background: rgba(0,0,0,0.3); border-color: rgba(251,192,45,0.3); }
+.card-top { display: flex; align-items: flex-start; gap: 20px; }
+.tour-circle {
+    width: 140px; height: 140px; border-radius: 50%;
+    border: 4px solid #cddc39; overflow: hidden; flex-shrink: 0;
+    background: rgba(0,0,0,0.3);
+}
+.tour-circle img { width: 100%; height: 100%; object-fit: cover; }
+.tour-info-text { color: white; font-size: 16px; line-height: 1.5; flex: 1; }
+.tour-name { font-size: 26px; color: yellow; text-shadow: 2px 2px black; display: block; margin-bottom: 6px; }
+.tour-price { font-size: 28px; color: #cddc39; text-shadow: 2px 2px black; margin-top: 8px; display: block; }
+.book-btn {
+    background-color: #cddc39; color: #1a4d2e;
+    border: none; border-radius: 15px; padding: 16px;
+    font-family: 'Luckiest Guy'; font-size: 30px; cursor: pointer;
+    text-align: center; box-shadow: 0 6px 0 #689f38; transition: 0.1s;
+}
+.book-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #689f38; }
+
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="home.html">
+    <img src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/logo.png" alt="Tourist Tome">
+    <span>TOURIST TOME</span>
+  </a>
+  <div class="nav-links"><a href="home.html">HOME</a><a href="tours.html" class="active">ATTRACTION</a><a href="bookings.html">BOOK TOUR</a><a href="mybookings.html">MYBOOKING</a><a href="Review.html">REVIEWS</a></div>
+  <div class="nav-right">
+    <div class="nav-search">
+      <input type="text" placeholder="Search">
+      <img src="search-icon.png" alt="search" style="width:18px;" onerror="this.style.display='none'">
+    </div>
+    <span class="nav-user" id="navUser"></span>
+    <button class="nav-logout" onclick="window.location.href='login.html'">LOGOUT</button>
+  </div>
+</nav>
+<div class="page-wrap">
+  <header>
+    <h1 class="page-title">TOURS</h1>
+    <button class="filter-btn">FILTERS <span>&#9660;</span></button>
+  </header>
+  <div class="tours-grid">
+    <div class="tour-card">
+      <div class="card-top">
+        <div class="tour-circle"><img src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/tour1.jpg" alt="Tour"></div>
+        <div class="tour-info-text">
+          <span class="tour-name">BLUE HOLE DIVE</span>
+          Full-day scuba diving into the iconic Blue Hole.<br>Equipment and guide included.<br>6 hrs &middot; Max 12
+          <span class="tour-price">$250</span>
+        </div>
+      </div>
+      <button class="book-btn" onclick="window.location.href='bookings.html'">BOOK NOW</button>
+    </div>
+    <div class="tour-card">
+      <div class="card-top">
+        <div class="tour-circle"><img src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/tour2.jpg" alt="Tour"></div>
+        <div class="tour-info-text">
+          <span class="tour-name">EXPLORING MAYA RUINS</span>
+          Guided walk through Xunantunich with a certified archaeologist.<br>5 hrs &middot; Max 15
+          <span class="tour-price">$75</span>
+        </div>
+      </div>
+      <button class="book-btn" onclick="window.location.href='bookings.html'">BOOK NOW</button>
+    </div>
+    <div class="tour-card">
+      <div class="card-top">
+        <div class="tour-circle"><img src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/tour3.jpg" alt="Tour"></div>
+        <div class="tour-info-text">
+          <span class="tour-name">AERIAL TOUR</span>
+          Sightseeing flight over the Blue Hole and Lighthouse Reef.<br>2 hrs &middot; Max 5
+          <span class="tour-price">$180</span>
+        </div>
+      </div>
+      <button class="book-btn" onclick="window.location.href='bookings.html'">BOOK NOW</button>
+    </div>
+    <div class="tour-card">
+      <div class="card-top">
+        <div class="tour-circle"><img src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/tour4.jpg" alt="Tour"></div>
+        <div class="tour-info-text">
+          <span class="tour-name">SNORKELING COMBO</span>
+          Snorkeling at Blue Hole perimeter and barrier reef.<br>4 hrs &middot; Max 20
+          <span class="tour-price">$120</span>
+        </div>
+      </div>
+      <button class="book-btn" onclick="window.location.href='bookings.html'">BOOK NOW</button>
+    </div>
+    <div class="tour-card">
+      <div class="card-top">
+        <div class="tour-circle"><img src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/tour5.jpg" alt="Tour"></div>
+        <div class="tour-info-text">
+          <span class="tour-name">JAGUAR TREK</span>
+          Guided hike through the world's first jaguar sanctuary.<br>4 hrs &middot; Max 10
+          <span class="tour-price">$65</span>
+        </div>
+      </div>
+      <button class="book-btn" onclick="window.location.href='bookings.html'">BOOK NOW</button>
+    </div>
+    <div class="tour-card">
+      <div class="card-top">
+        <div class="tour-circle"><img src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/tour6.jpg" alt="Tour"></div>
+        <div class="tour-info-text">
+          <span class="tour-name">LAMANAI RIVER SAFARI</span>
+          Scenic boat ride to the ancient Lamanai temples.<br>6 hrs &middot; Max 14
+          <span class="tour-price">$85</span>
+        </div>
+      </div>
+      <button class="book-btn" onclick="window.location.href='bookings.html'">BOOK NOW</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+    var u = sessionStorage.getItem('tt_user');
+    if (u) { var el = document.getElementById('navUser'); if (el) el.textContent = u.toUpperCase(); }
+})();
+</script>
+</body>
+</html>

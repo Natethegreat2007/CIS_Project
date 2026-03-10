@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tourist Tome - My Bookings</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: #1a4d2e;
+    background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 100% 40px;
+    font-family: 'Luckiest Guy', cursive; color: #ffff00; min-height: 100vh;
+}
+nav {
+    position: sticky; top: 0; z-index: 200; background: #0d3320;
+    border-bottom: 4px solid #fbc02d; display: flex; align-items: center;
+    padding: 0 30px; height: 70px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-right: 28px; }
+.nav-logo img { height: 46px; }
+.nav-logo span { font-size: 1.5rem; color: yellow; text-shadow: 2px 2px black; letter-spacing: 2px; }
+.nav-links { display: flex; gap: 4px; align-items: center; }
+.nav-links a { color: rgba(255,255,0,0.6); text-decoration: none; font-size: 1rem; padding: 8px 15px; border-radius: 10px; transition: 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: yellow; background: rgba(255,255,0,0.12); }
+.nav-right { display: flex; gap: 12px; align-items: center; margin-left: auto; }
+.nav-user { background: rgba(255,255,0,0.12); border: 2px solid #fbc02d; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: yellow; }
+.nav-logout { background: yellow; color: #1a4d2e; border: none; border-radius: 12px; padding: 8px 18px; font-family: 'Luckiest Guy'; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #888800; transition: 0.1s; }
+.nav-logout:hover { background: #eeee00; }
+
+.page-wrap { max-width: 1200px; margin: 0 auto; padding: 36px 40px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+.container { border: 4px solid #fbc02d; border-radius: 20px; padding: 26px; background: rgba(0,0,0,0.3); }
+.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.page-title { font-size: 42px; text-shadow: 3px 3px black; }
+.booking-search {
+    background: transparent; border: 3px solid yellow; border-radius: 50px;
+    padding: 10px 24px; color: yellow; font-family: 'Luckiest Guy'; font-size: 18px; width: 290px; outline: none;
+}
+.booking-search::placeholder { color: rgba(255,255,0,0.35); }
+
+.empty-state {
+    text-align: center; padding: 60px 20px;
+    color: rgba(255,255,0,0.3); font-size: 22px; line-height: 2;
+}
+.empty-state a { color: #cddc39; text-decoration: none; }
+.empty-state a:hover { color: yellow; }
+
+table { width: 100%; border-collapse: collapse; }
+th { color: #8bc34a; font-size: 17px; padding: 14px; border-bottom: 3px solid #fbc02d; text-align: left; }
+td { padding: 16px 14px; text-align: left; border-bottom: 1px solid rgba(251,192,45,0.15); font-size: 15px; color: #e0e0e0; }
+tbody tr:hover td { background: rgba(255,255,255,0.03); }
+.status-pill {
+    padding: 6px 16px; border-radius: 30px; color: white;
+    font-family: 'Luckiest Guy'; font-size: 14px;
+    display: inline-block; box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+}
+.Confirmed { background: #689f38; }
+.Cancelled { background: #ff5252; }
+.Pending   { background: #ff9800; }
+.cancel-btn {
+    background: rgba(255,82,82,0.15); color: #ff5252; border: 2px solid #ff5252;
+    border-radius: 10px; padding: 5px 14px; font-family: 'Luckiest Guy'; font-size: 14px;
+    cursor: pointer; transition: 0.15s;
+}
+.cancel-btn:hover { background: rgba(255,82,82,0.3); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="home.html">
+    <img src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/logo.png" alt="" onerror="this.style.display='none'">
+    <span>TOURIST TOME</span>
+  </a>
+  <div class="nav-links">
+    <a href="home.html">HOME</a>
+    <a href="tours.html">ATTRACTION</a>
+    <a href="bookings.html">BOOK TOUR</a>
+    <a href="mybookings.html" class="active">MYBOOKING</a>
+    <a href="Review.html">REVIEWS</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser"></span>
+    <button class="nav-logout" id="navLogout">LOGOUT</button>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="container">
+    <div class="table-header">
+      <div class="page-title">MY BOOKINGS:</div>
+      <input type="text" id="searchInput" class="booking-search" placeholder="Search bookings...">
+    </div>
+    <div id="tableWrap"></div>
+  </div>
+</div>
+
+<script src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/tt-data.js"></script>
+<script>
+TT.auth.require();
+
+function render(filter) {
+    var bkgs = TT.bookings.mine();
+    if (filter) bkgs = bkgs.filter(function(b){
+        return [b.tourName, b.attraction, b.location, b.status].join(' ').toLowerCase().includes(filter.toLowerCase());
+    });
+
+    var wrap = document.getElementById('tableWrap');
+
+    if (!bkgs.length) {
+        wrap.innerHTML = '<div class="empty-state">No bookings yet!<br>' +
+            (filter ? 'No results for "' + filter + '"' : '<a href="bookings.html">Book your first tour &#8594;</a>') +
+            '</div>';
+        return;
+    }
+
+    wrap.innerHTML = '<table><thead><tr>' +
+        '<th>#</th><th>Tour</th><th>Attraction</th><th>Location</th>' +
+        '<th>Date</th><th>Persons</th><th>Total</th><th>Status</th><th></th>' +
+        '</tr></thead><tbody>' +
+        bkgs.map(function(b, i) {
+            var d = new Date(b.tourDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+            return '<tr>' +
+                '<td>' + (i+1) + '</td>' +
+                '<td>' + b.tourName + '</td>' +
+                '<td>' + b.attraction + '</td>' +
+                '<td>' + b.location + '</td>' +
+                '<td>' + d + '</td>' +
+                '<td>' + b.personCount + '</td>' +
+                '<td style="color:#cddc39">$' + b.total + '</td>' +
+                '<td><span class="status-pill ' + b.status + '">' + b.status.toUpperCase() + '</span></td>' +
+                '<td>' + (b.status === 'Confirmed' ?
+                    '<button class="cancel-btn" onclick="cancelBooking(' + b.id + ')">CANCEL</button>' : '') + '</td>' +
+            '</tr>';
+        }).join('') +
+        '</tbody></table>';
+}
+
+function cancelBooking(id) {
+    if (!confirm('Cancel this booking?')) return;
+    TT.bookings.cancel(id);
+    render(document.getElementById('searchInput').value);
+}
+
+document.getElementById('searchInput').addEventListener('input', function(){ render(this.value); });
+
+render();
+</script>
+</body>
+</html>
