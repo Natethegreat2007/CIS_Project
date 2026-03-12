@@ -112,8 +112,12 @@ nav {
     font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
     box-sizing: border-box; transition: border-color 0.2s;
 }
-.input-item textarea { min-height: 90px; resize: vertical; }
-.input-item input:focus, .input-item textarea:focus, .input-item select:focus { border-color: yellow; }
+.input-item textarea {
+    min-height: 90px; resize: vertical;
+}
+.input-item input:focus, .input-item textarea:focus, .input-item select:focus {
+    border-color: yellow;
+}
 .input-item input::placeholder, .input-item textarea::placeholder { color: rgba(255,255,0,0.4); }
 .input-item select option { background: #1a4d2e; }
 h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 6px; margin: 36px 0 20px; }
@@ -130,7 +134,7 @@ h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(
 <body>
 <nav>
   <a class="nav-logo" href="dashboard.html">
-    <img src="../../../../../Downloads/cis%20final%20project-20260310T192318Z-3-001/cis%20final%20project/logo.png" alt="Tourist Tome">
+    <img src="../images/logo.png" alt="Tourist Tome">
     <span>TOURIST TOME</span>
   </a>
   <div class="nav-links"><a href="dashboard.html">DASHBOARD</a><a href="admindashboard.html" class="active">ATTRACTIONS</a><a href="managetour.html">MANAGE TOUR</a></div>
@@ -171,10 +175,10 @@ h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(
 
   <h2>USER MANAGER</h2>
   <div class="user-manager">
-    <div class="user-card"><div class="avatar"><img src="avatar1.jpg" onerror="this.style.display='none'" alt=""></div><span>Nathan Scott</span><span style="font-size:13px;color:#cddc39;">Admin</span><button class="edit-btn">EDIT</button></div>
-    <div class="user-card"><div class="avatar"><img src="avatar2.jpg" onerror="this.style.display='none'" alt=""></div><span>Nicole Burke</span><span style="font-size:13px;color:#cddc39;">Operator</span><button class="edit-btn">EDIT</button></div>
-    <div class="user-card"><div class="avatar"><img src="avatar3.jpg" onerror="this.style.display='none'" alt=""></div><span>Jon Moore</span><span style="font-size:13px;color:#cddc39;">Operator</span><button class="edit-btn">EDIT</button></div>
-    <div class="user-card"><div class="avatar"><img src="avatar4.jpg" onerror="this.style.display='none'" alt=""></div><span>Gavin Harban</span><span style="font-size:13px;color:#cddc39;">Tourist</span><button class="edit-btn">EDIT</button></div>
+    <div class="user-card"><div class="avatar"><img src="../images/avatar1.jpg" onerror="this.style.display='none'" alt=""></div><span>Nathan Scott</span><span style="font-size:13px;color:#cddc39;">Admin</span><button class="edit-btn">EDIT</button></div>
+    <div class="user-card"><div class="avatar"><img src="../images/avatar2.jpg" onerror="this.style.display='none'" alt=""></div><span>Nicole Burke</span><span style="font-size:13px;color:#cddc39;">Operator</span><button class="edit-btn">EDIT</button></div>
+    <div class="user-card"><div class="avatar"><img src="../images/avatar3.jpg" onerror="this.style.display='none'" alt=""></div><span>Jon Moore</span><span style="font-size:13px;color:#cddc39;">Operator</span><button class="edit-btn">EDIT</button></div>
+    <div class="user-card"><div class="avatar"><img src="../images/avatar4.jpg" onerror="this.style.display='none'" alt=""></div><span>Gavin Harban</span><span style="font-size:13px;color:#cddc39;">Tourist</span><button class="edit-btn">EDIT</button></div>
   </div>
 </div>
 <script>

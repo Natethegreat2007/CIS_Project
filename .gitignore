@@ -10,3 +10,5 @@
 .idea
 .gitignore
 .env
+/postman
+.postman
