@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Tourist Tome - Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial,serif;
+    background-image: url("../images/jungle-bg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-color: #1a4d2e;
+    color: white;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.logo {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.logo img {
+    width: 180px;
+}
+
+h1 {
+    font-family: 'Luckiest Guy',serif;
+    font-size: 70px;
+    color: yellow;
+    text-shadow: 5px 5px black;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+.login-box {
+    width: 500px;
+    padding: 50px;
+    border-radius: 30px;
+    margin: -20px auto 0 auto; /* pulls it upward */
+    text-align: center;
+}
+
+/* Google button — slotted in above the inputs */
+.google-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0 2px;
+    color: rgba(255,255,255,0.45);
+    font-family: 'Luckiest Guy',serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.25);
+}
+
+
+.login-box input {
+    width: 90%;
+    padding: 20px;
+    font-size: 20px;
+    border-radius: 25px;
+    border: none;
+    display: block;
+    margin: 12px auto;
+    font-family: 'Luckiest Guy',serif;
+    outline: none;
+}
+
+.forgot {
+    font-size: 16px;
+    margin-top: 4px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Luckiest Guy',serif;
+    letter-spacing: 1px;
+}
+.forgot:hover { color: #cddc39; }
+
+/* Subtle error */
+.error-msg {
+    background: rgba(255, 50, 50, 0.25);
+    border: 2px solid #ff5252;
+    border-radius: 20px;
+    padding: 10px 18px;
+    color: #ff5252;
+    font-family: 'Luckiest Guy';
+    font-size: 15px;
+    margin-bottom: 8px;
+    display: none;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Demo hint — small and subtle, doesn't clutter the original look */
+.demo-hint {
+    margin-top: 14px;
+    font-family: 'Luckiest Guy';
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+}
+.demo-hint strong { color: rgba(255,255,255,0.5); }
+
+/* Original fixed corner buttons — pixel perfect */
+.go-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 250px;
+    height: 80px;
+    font-size: 30px;
+    font-family: 'Luckiest Guy';
+    background: yellow;
+    color: green;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 6px 0 #888800;
+}
+.go-btn:hover  { background: #eeee00; transform: scale(1.07); }
+.go-btn:active { transform: translateY(4px) scale(1); box-shadow: 0 2px 0 #888800; }
+
+.register-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 250px;
+    height: 80px;
+    font-size: 30px;
+    font-family: 'Luckiest Guy';
+    background: yellow;
+    color: green;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 0 #888800;
+}
+.register-btn:hover { background: #eeee00; transform: scale(1.07); }
+
+</style>
+</head>
+<body>
+
+<div class="logo">
+    <img src="../images/logo.png" alt="Tourist Tome" onerror="this.style.display='none'">
+</div>
+
+<h1>LOGIN</h1>
+<br>
+
+<div class="login-box">
+
+    <!-- Google Sign-In ──────────────────────────────────────
+         To activate: replace YOUR_GOOGLE_CLIENT_ID_HERE with
+         your real Client ID from console.cloud.google.com
+    ──────────────────────────────────────────────────────── -->
+    <div id="g_id_onload"
+         data-client_id="YOUR_GOOGLE_CLIENT_ID_HERE"
+         data-callback="handleGoogleLogin"
+         data-auto_prompt="false">
+    </div>
+    <div class="google-wrap">
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="large"
+             data-theme="outline"
+             data-text="sign_in_with"
+             data-shape="pill"
+             data-width="340">
+        </div>
+    </div>
+
+    <div class="divider">OR</div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <input type="email"    id="emailInput"    placeholder="Email">
+    <input type="password" id="passwordInput" placeholder="Password">
+
+    <div class="forgot" onclick="forgotPassword()">FORGOT PASSWORD?</div>
+
+   
+</div>
+
+<button class="go-btn" onclick="handleLogin()">GO!</button>
+<a class="register-btn" href="register.html">REGISTER</a>
+
+<script src="tt-data.js"></script>
+<script>
+
+function handleLogin() {
+    const email = document.getElementById('emailInput').value.trim();
+    const pass  = document.getElementById('passwordInput').value;
+    const err   = document.getElementById('errorMsg');
+
+    if (!email || !pass) { showErr('Enter your email and password.'); return; }
+
+    const user = TT.auth.login(email, pass);
+    if (!user) { showErr('Wrong email or password — try a demo account!'); return; }
+
+    err.style.display = 'none';
+    redirect(user.role);
+}
+
+function handleGoogleLogin(response) {
+    const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    const user = TT.auth.loginGoogle(payload);
+    redirect(user.role);
+}
+
+function redirect(role) {
+    if      (role === 'admin')    location.href = 'dashboard.html';
+    else if (role === 'operator') location.href = 'managetour.html';
+    else                          location.href = 'home.html';
+}
+
+function showErr(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function forgotPassword() {
+    const e = document.getElementById('emailInput').value.trim();
+    alert(e ? `Password reset sent to ${e} (demo mode).` : 'Enter your email address first.');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+</script>
+
+</body>
+</html>

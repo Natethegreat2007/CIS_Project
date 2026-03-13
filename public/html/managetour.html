@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tourist Tome - Manage Tour</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: #1a4d2e;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+    background-size: 40px 100%;
+    font-family: 'Luckiest Guy', cursive;
+    color: #ffff00;
+    min-height: 100vh;
+}
+
+
+nav {
+    position: sticky; top: 0; z-index: 200;
+    background: #0d3320;
+    border-bottom: 4px solid #fbc02d;
+    display: flex; align-items: center;
+    padding: 0 30px; height: 70px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.nav-logo {
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none; margin-right: 28px; flex-shrink: 0;
+}
+.nav-logo img { height: 46px; width: auto; }
+.nav-logo span {
+    font-family: 'Luckiest Guy';
+    font-size: 1.55rem; color: yellow;
+    text-shadow: 2px 2px black; letter-spacing: 2px;
+}
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a {
+    color: rgba(255,255,0,0.6);
+    text-decoration: none;
+    font-family: 'Luckiest Guy';
+    font-size: 1rem; letter-spacing: 1px;
+    padding: 8px 15px; border-radius: 10px;
+    transition: 0.2s;
+}
+.nav-links a:hover, .nav-links a.active {
+    color: yellow; background: rgba(255,255,0,0.12);
+}
+.nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.nav-search {
+    background: white; border-radius: 50px;
+    border: 3px solid black; padding: 5px 16px;
+    display: flex; align-items: center; gap: 6px;
+}
+.nav-search input {
+    border: none; outline: none;
+    font-family: 'Luckiest Guy'; font-size: 0.85rem;
+    width: 145px; color: #1a4d2e; background: transparent;
+}
+.nav-user {
+    background: rgba(255,255,0,0.12);
+    border: 2px solid #fbc02d; border-radius: 20px;
+    padding: 4px 14px; font-size: 0.8rem;
+    color: yellow; letter-spacing: 1px;
+}
+.nav-logout {
+    background: yellow; color: #1a4d2e;
+    border: none; border-radius: 12px;
+    padding: 8px 18px; font-family: 'Luckiest Guy';
+    font-size: 0.95rem; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 4px 0 #888800;
+    transition: 0.1s;
+}
+.nav-logout:hover { background: #eeee00; }
+.nav-logout:active { transform: translateY(3px); box-shadow: 0 1px 0 #888800; }
+
+.page-wrap { max-width: 1280px; margin: 0 auto; padding: 36px 40px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+.page-title { font-size: 60px; text-shadow: 4px 4px black; margin-bottom: 30px; letter-spacing: 2px; }
+.section-title { font-size: 36px; text-shadow: 3px 3px black; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,0,0.2); padding-bottom: 8px; }
+.back-nav { font-size: 45px; color: orange; cursor: pointer; display: inline-block; margin-bottom: 12px; text-decoration: none; transition: transform 0.2s; }
+.back-nav:hover { transform: translateX(-8px); }
+.input-field {
+    width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d;
+    border-radius: 20px; padding: 12px 18px; color: #ffff00;
+    font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
+    box-sizing: border-box; transition: border-color 0.2s;
+}
+.input-field:focus { border-color: yellow; }
+.input-field::placeholder { color: rgba(255,255,0,0.4); }
+.input-field option { background: #1a4d2e; }
+.ybtn {
+    background: #cddc39; color: #1a4d2e; border: none;
+    border-radius: 14px; padding: 13px 30px;
+    font-family: 'Luckiest Guy'; font-size: 20px; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 5px 0 #689f38; transition: 0.1s;
+}
+.ybtn:hover { background: #ddef48; }
+.ybtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #689f38; }
+.alert { padding: 12px 18px; border-radius: 14px; font-size: 17px; margin-bottom: 16px; display: none; }
+.alert-ok  { background: rgba(205,220,57,0.12); border: 2px solid #cddc39; color: #cddc39; }
+.alert-err { background: rgba(255,82,82,0.12);  border: 2px solid #ff5252;  color: #ff5252; }
+
+.page-header { font-size: 50px; text-shadow: 4px 4px black; margin: 0 0 8px 0; }
+.sub-header { font-size: 30px; border-bottom: 2px solid yellow; display: inline-block; margin-bottom: 36px; padding-bottom: 5px; }
+.manage-container { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 40px; align-items: start; }
+.input-group { margin-bottom: 28px; }
+.input-group label { display: block; font-size: 22px; margin-bottom: 10px; }
+.input-field { width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d; border-radius: 20px; padding: 12px 20px; color: yellow; font-family: 'Luckiest Guy'; font-size: 20px; outline: none; box-sizing: border-box; transition: border-color 0.2s; }
+.input-field:focus { border-color: yellow; }
+.input-field::placeholder { color: rgba(255,255,0,0.4); }
+.input-field option { background: #1a4d2e; }
+.upload-section { text-align: center; border-left: 2px solid rgba(251,192,45,0.3); padding-left: 40px; }
+.upload-title { font-size: 24px; margin-bottom: 20px; }
+.upload-box { width: 250px; height: 250px; background: black; border: 3px solid #fbc02d; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: background 0.3s; margin: 0 auto; }
+.upload-box:hover { background: #111; }
+.camera-icon { width: 80px; height: 80px; border: 4px solid yellow; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.camera-icon img { width: 48px; height: 48px; object-fit: contain; }
+#imagePreview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+.action-row { display: flex; gap: 16px; margin-top: 10px; }
+.cancel-btn { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); border: 2px solid rgba(255,255,255,0.2); border-radius: 14px; padding: 13px 28px; font-family: 'Luckiest Guy'; font-size: 20px; cursor: pointer; transition: 0.15s; }
+.cancel-btn:hover { background: rgba(255,255,255,0.18); }
+
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="dashboard.html">
+    <img src="../images/logo.png" alt="Tourist Tome">
+    <span>TOURIST TOME</span>
+  </a>
+  <div class="nav-links"><a href="dashboard.html">DASHBOARD</a><a href="admindashboard.html">ATTRACTIONS</a><a href="managetour.html" class="active">MANAGE TOUR</a></div>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser"></span>
+    <button class="nav-logout" onclick="window.location.href='login.html'">LOGOUT</button>
+  </div>
+</nav>
+<div class="page-wrap">
+  <a class="back-nav" href="dashboard.html">&#8592;</a>
+  <h1 class="page-header">MANAGE TOUR</h1>
+  <h2 class="sub-header">CREATE/EDIT TOUR</h2>
+  <div id="saveAlert" class="alert alert-ok">Tour saved successfully!</div>
+
+  <div class="manage-container">
+    <div>
+      <div class="input-group"><label>Price:</label><input type="number" class="input-field" id="tourPrice" placeholder="Enter.."></div>
+      <div class="input-group"><label>Duration (hrs):</label><input type="number" class="input-field" id="tourDuration" placeholder="Enter.."></div>
+      <div class="input-group"><label>Location:</label><input type="text" class="input-field" id="tourLoc" placeholder="Enter.."></div>
+      <div class="input-group">
+        <label>Linked Attraction:</label>
+        <select class="input-field" id="tourAttr">
+          <option value="">Select attraction...</option>
+          <option>The Great Blue Hole</option>
+          <option>Xunantunich</option>
+          <option>Belize Barrier Reef</option>
+          <option>Caracol</option>
+          <option>Cockscomb Basin</option>
+          <option>Lamanai</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <div class="input-group"><label>Tour Name:</label><input type="text" class="input-field" id="tourName" placeholder="Enter.."></div>
+      <div class="input-group"><label>Tour Description:</label><textarea class="input-field" id="tourDesc" placeholder="Enter.." style="min-height:110px;resize:vertical;"></textarea></div>
+      <div class="input-group"><label>Max Capacity:</label><input type="number" class="input-field" id="tourCap" placeholder="Enter.."></div>
+    </div>
+    <div class="upload-section">
+      <div class="upload-title">Upload Images</div>
+      <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+        <div class="camera-icon">
+          <img src="camera-icon.png" alt="camera" onerror="this.outerHTML='<span style=font-size:2rem;color:yellow;>&#128247;</span>'">
+        </div>
+        <img id="imagePreview" alt="Preview">
+        <input type="file" id="fileInput" hidden accept="image/*">
+      </div>
+    </div>
+  </div>
+
+  <div class="action-row" style="margin-top:24px;">
+    <button class="ybtn" onclick="saveTour()">SAVE TOUR</button>
+    <button class="cancel-btn" onclick="resetForm()">CANCEL</button>
+  </div>
+</div>
+<script>
+document.getElementById('fileInput').addEventListener('change', function() {
+  var f = this.files[0];
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function(e) {
+    var prev = document.getElementById('imagePreview');
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+    document.querySelector('.camera-icon').style.display = 'none';
+  };
+  r.readAsDataURL(f);
+});
+
+function saveTour() {
+  var n = document.getElementById('tourName').value.trim();
+  var a = document.getElementById('tourAttr').value;
+  if (!n || !a) { alert('Tour name and linked attraction are required.'); return; }
+  var al = document.getElementById('saveAlert');
+  al.style.display = 'block';
+  setTimeout(function(){ al.style.display = 'none'; }, 3000);
+}
+
+function resetForm() {
+  ['tourPrice','tourDuration','tourLoc','tourName','tourDesc','tourCap'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('tourAttr').value = '';
+  document.getElementById('imagePreview').style.display = 'none';
+  document.querySelector('.camera-icon').style.display = 'flex';
+}
+</script>
+
+<script>
+(function(){
+    var u = sessionStorage.getItem('tt_user');
+    if (u) { var el = document.getElementById('navUser'); if (el) el.textContent = u.toUpperCase(); }
+})();
+</script>
+</body>
+</html>

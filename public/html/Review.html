@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tourist Tome - Reviews</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: #1a4d2e;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+    background-size: 40px 100%;
+    font-family: 'Luckiest Guy', cursive; color: #ffff00; min-height: 100vh;
+}
+nav {
+    position: sticky; top: 0; z-index: 200; background: #0d3320;
+    border-bottom: 4px solid #fbc02d; display: flex; align-items: center;
+    padding: 0 30px; height: 70px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-right: 28px; }
+.nav-logo img { height: 46px; }
+.nav-logo span { font-size: 1.5rem; color: yellow; text-shadow: 2px 2px black; letter-spacing: 2px; }
+.nav-links { display: flex; gap: 4px; align-items: center; }
+.nav-links a { color: rgba(255,255,0,0.6); text-decoration: none; font-size: 1rem; padding: 8px 15px; border-radius: 10px; transition: 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: yellow; background: rgba(255,255,0,0.12); }
+.nav-right { display: flex; gap: 12px; align-items: center; margin-left: auto; }
+.nav-user { background: rgba(255,255,0,0.12); border: 2px solid #fbc02d; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: yellow; }
+.nav-logout { background: yellow; color: #1a4d2e; border: none; border-radius: 12px; padding: 8px 18px; font-family: 'Luckiest Guy'; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #888800; transition: 0.1s; }
+.nav-logout:hover { background: #eeee00; }
+
+.page-wrap { max-width: 1100px; margin: 0 auto; padding: 36px 40px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+.title { font-size: 50px; text-shadow: 4px 4px black; }
+.tour-filter-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 24px; }
+.tf-pill {
+    background: rgba(0,0,0,0.3); color: rgba(255,255,0,0.65);
+    border: 2px solid #fbc02d; border-radius: 25px;
+    padding: 5px 18px; font-family: 'Luckiest Guy'; font-size: 15px; cursor: pointer; transition: 0.2s;
+}
+.tf-pill:hover, .tf-pill.active { background: #fbc02d; color: #1a4d2e; }
+
+.avg-row { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.avg-num { font-size: 64px; text-shadow: 4px 4px black; line-height: 1; }
+.avg-right { display: flex; flex-direction: column; gap: 4px; }
+.avg-stars { font-size: 32px; }
+.avg-count { font-size: 15px; color: rgba(255,255,0,0.45); }
+
+.content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
+/* Write box */
+.review-box { background: #fce4ec; border: 4px solid black; border-radius: 20px; padding: 22px; color: black; }
+.user-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.avatar { width: 50px; height: 50px; border: 3px solid black; border-radius: 50%; background: #ddd; flex-shrink: 0; overflow: hidden; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.user-info { flex: 1; }
+.user-name { font-size: 18px; font-weight: 900; }
+.rating-label { font-size: 13px; color: #666; margin-bottom: 4px; }
+.mini-stars { display: flex; cursor: pointer; font-size: 30px; }
+.clickable-star { color: white; -webkit-text-stroke: 1.5px black; transition: transform 0.1s; }
+.clickable-star.active { color: #ffcc29; }
+.clickable-star:hover { transform: scale(1.2); }
+textarea {
+    width: 100%; height: 120px; background: transparent; border: none;
+    font-family: 'Luckiest Guy'; font-size: 16px; outline: none;
+    resize: none; color: #1a4d2e; margin: 8px 0;
+}
+textarea::placeholder { color: rgba(26,77,46,0.4); }
+.submit-btn {
+    background: #cddc39; color: #1a4d2e; border: none; border-radius: 12px;
+    padding: 10px 28px; font-family: 'Luckiest Guy'; font-size: 18px;
+    cursor: pointer; box-shadow: 0 4px 0 #689f38; transition: 0.1s; width: 100%;
+}
+.submit-btn:hover  { background: #ddef48; }
+.submit-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #689f38; }
+.ok-msg { color: #689f38; font-size: 15px; margin-top: 8px; display: none; font-weight: 900; }
+.err-msg { color: #c0392b; font-size: 15px; margin-top: 8px; display: none; }
+
+/* Review list */
+.scroll-section { height: 440px; overflow-y: auto; background: #fce4ec; border: 4px solid black; border-radius: 20px; padding: 18px; }
+.scroll-section::-webkit-scrollbar { width: 5px; }
+.scroll-section::-webkit-scrollbar-thumb { background: #fbc02d; border-radius: 3px; }
+.review-item { border-bottom: 2px solid rgba(0,0,0,0.1); padding: 12px 0; color: black; }
+.review-item:last-child { border-bottom: none; }
+.rev-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
+.rev-name { font-size: 15px; font-weight: 900; }
+.rev-stars { margin-left: auto; font-size: 18px; -webkit-text-stroke: 1px black; }
+.rev-tour  { font-size: 12px; color: #888; margin-bottom: 4px; }
+.rev-text  { font-size: 15px; font-weight: 700; }
+.rev-date  { font-size: 12px; color: #aaa; margin-top: 4px; }
+.no-reviews { color: rgba(0,0,0,0.3); font-size: 18px; text-align: center; padding: 40px 20px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="home.html">
+    <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+    <span>TOURIST TOME</span>
+  </a>
+  <div class="nav-links">
+    <a href="home.html">HOME</a>
+    <a href="tours.html">ATTRACTION</a>
+    <a href="bookings.html">BOOK TOUR</a>
+    <a href="mybookings.html">MYBOOKING</a>
+    <a href="Review.html" class="active">REVIEWS</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser"></span>
+    <button class="nav-logout" id="navLogout">LOGOUT</button>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <a href="home.html" style="font-size:40px;color:orange;text-decoration:none;display:inline-block;margin-bottom:10px;">&#8592;</a>
+  <div class="title">REVIEWS</div>
+
+  <!-- Tour filter pills -->
+  <div class="tour-filter-row" id="tourPills"></div>
+
+  <!-- Average score -->
+  <div class="avg-row">
+    <div class="avg-num" id="avgNum">—</div>
+    <div class="avg-right">
+      <div class="avg-stars" id="avgStars"></div>
+      <div class="avg-count" id="avgCount">0 reviews</div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Write a review -->
+    <div class="review-box">
+      <div class="user-header">
+        <div class="avatar"><img src="avatar.png" onerror="this.style.display='none'" alt=""></div>
+        <div class="user-info">
+          <div class="user-name" id="reviewerName">WRITE A REVIEW</div>
+          <div>
+            <label class="rating-label">YOUR RATING</label>
+            <div class="mini-stars" id="starInput">
+              <span class="clickable-star" data-v="1">&#9733;</span>
+              <span class="clickable-star" data-v="2">&#9733;</span>
+              <span class="clickable-star" data-v="3">&#9733;</span>
+              <span class="clickable-star" data-v="4">&#9733;</span>
+              <span class="clickable-star" data-v="5">&#9733;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <textarea id="reviewText" placeholder="WRITE YOUR REVIEW..."></textarea>
+      <button class="submit-btn" onclick="submitReview()">SUBMIT REVIEW</button>
+      <div class="ok-msg"  id="okMsg">&#10003; Review submitted!</div>
+      <div class="err-msg" id="errMsg"></div>
+    </div>
+
+    <!-- Review list -->
+    <div class="scroll-section" id="reviewList"></div>
+  </div>
+</div>
+
+<script src="tt-data.js"></script>
+<script>
+TT.auth.require();
+
+var selRating = 0;
+var selTourID = null;
+var session   = TT.auth.session();
+
+// Set reviewer name
+if (session) document.getElementById('reviewerName').textContent = session.name.toUpperCase();
+
+// ── Tour filter pills ──────────────────────────────────────
+function initPills() {
+    var row = document.getElementById('tourPills');
+    row.innerHTML = '<button class="tf-pill active" data-tid="">ALL TOURS</button>' +
+        TT.TOURS.map(function(t){
+            return '<button class="tf-pill" data-tid="' + t.id + '">' + t.name + '</button>';
+        }).join('');
+
+    row.addEventListener('click', function(e) {
+        var btn = e.target.closest('.tf-pill');
+        if (!btn) return;
+        document.querySelectorAll('.tf-pill').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        selTourID = btn.dataset.tid ? parseInt(btn.dataset.tid) : null;
+        renderReviews();
+        renderAvg();
+    });
+}
+
+// ── Star rating input ─────────────────────────────────────
+document.querySelectorAll('.clickable-star').forEach(function(star, idx) {
+    star.addEventListener('click', function() {
+        selRating = idx + 1;
+        document.querySelectorAll('.clickable-star').forEach(function(s, i){
+            s.classList.toggle('active', i <= idx);
+        });
+    });
+});
+
+// ── Render avg score ──────────────────────────────────────
+function renderAvg() {
+    var all = selTourID ? TT.reviews.forTour(selTourID) : TT.reviews.all();
+    var avg = all.length ? (all.reduce(function(s,r){ return s+r.rating; }, 0) / all.length) : null;
+    document.getElementById('avgNum').textContent   = avg ? avg.toFixed(1) : '—';
+    document.getElementById('avgStars').innerHTML   = avg ? TT.starsHTML(avg, 30) : '';
+    document.getElementById('avgCount').textContent = all.length + (all.length === 1 ? ' review' : ' reviews');
+}
+
+// ── Render review list ────────────────────────────────────
+function renderReviews() {
+    var list = selTourID ? TT.reviews.forTour(selTourID) : TT.reviews.all();
+    var el   = document.getElementById('reviewList');
+
+    if (!list.length) {
+        el.innerHTML = '<div class="no-reviews">No reviews yet.<br>Be the first!</div>';
+        return;
+    }
+
+    el.innerHTML = list.map(function(r) {
+        var tour = TT.TOURS.find(function(t){ return t.id === r.tourID; });
+        var d    = new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        return '<div class="review-item">' +
+            '<div class="rev-header">' +
+                '<div class="avatar" style="width:36px;height:36px;flex-shrink:0;border-width:2px;"></div>' +
+                '<span class="rev-name">' + (r.userName || 'Anonymous').toUpperCase() + '</span>' +
+                '<span class="rev-stars">' + TT.starsHTML(r.rating, 16) + '</span>' +
+            '</div>' +
+            (tour ? '<div class="rev-tour">' + tour.name + '</div>' : '') +
+            '<div class="rev-text">' + (r.comment || '') + '</div>' +
+            '<div class="rev-date">' + d + '</div>' +
+        '</div>';
+    }).join('');
+}
+
+// ── Submit review ─────────────────────────────────────────
+function submitReview() {
+    var text = document.getElementById('reviewText').value.trim();
+    var ok   = document.getElementById('okMsg');
+    var err  = document.getElementById('errMsg');
+    ok.style.display = 'none'; err.style.display = 'none';
+
+    if (!selRating) { err.textContent = 'Please select a star rating.'; err.style.display = 'block'; return; }
+    if (!text)      { err.textContent = 'Please write something.';       err.style.display = 'block'; return; }
+
+    // Use selected tour or first tour as default
+    var tourID = selTourID || TT.TOURS[0].id;
+    var result = TT.reviews.submit({ tourID, rating: selRating, comment: text });
+
+    if (!result.ok) { err.textContent = result.error; err.style.display = 'block'; return; }
+
+    document.getElementById('reviewText').value = '';
+    selRating = 0;
+    document.querySelectorAll('.clickable-star').forEach(function(s){ s.classList.remove('active'); });
+    ok.style.display = 'block';
+    setTimeout(function(){ ok.style.display = 'none'; }, 3000);
+    renderReviews();
+    renderAvg();
+}
+
+initPills();
+renderAvg();
+renderReviews();
+</script>
+</body>
+</html>

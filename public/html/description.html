@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tourist Tome - Attraction</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: #1a4d2e;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+    background-size: 40px 100%;
+    font-family: 'Luckiest Guy', cursive;
+    color: #ffff00;
+    min-height: 100vh;
+}
+
+/* ── NAV ── */
+nav {
+    position: sticky; top: 0; z-index: 200;
+    background: #0d3320; border-bottom: 4px solid #fbc02d;
+    display: flex; align-items: center;
+    padding: 0 30px; height: 70px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-right: 28px; }
+.nav-logo img { height: 46px; }
+.nav-logo span { font-size: 1.5rem; color: yellow; text-shadow: 2px 2px black; letter-spacing: 2px; }
+.nav-links { display: flex; gap: 4px; align-items: center; }
+.nav-links a { color: rgba(255,255,0,0.6); text-decoration: none; font-size: 1rem; padding: 8px 15px; border-radius: 10px; transition: 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: yellow; background: rgba(255,255,0,0.12); }
+.nav-right { display: flex; gap: 12px; align-items: center; margin-left: auto; }
+.nav-user { background: rgba(255,255,0,0.12); border: 2px solid #fbc02d; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: yellow; }
+.nav-logout { background: yellow; color: #1a4d2e; border: none; border-radius: 12px; padding: 8px 18px; font-family: 'Luckiest Guy'; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #888800; transition: 0.1s; }
+.nav-logout:hover { background: #eeee00; }
+.nav-logout:active { transform: translateY(3px); }
+
+/* ── LAYOUT ── */
+.page-wrap { max-width: 1200px; margin: 0 auto; padding: 30px 40px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+.back-nav {
+    font-size: 45px; color: orange; cursor: pointer;
+    display: inline-block; margin-bottom: 14px;
+    text-decoration: none; transition: transform 0.2s;
+}
+.back-nav:hover { transform: translateX(-8px); }
+
+.main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+
+/* ── LEFT COL ── */
+.attr-category-badge {
+    display: inline-block;
+    background: rgba(251,192,45,0.15); border: 2px solid #fbc02d;
+    color: #cddc39; font-size: 13px; letter-spacing: 2px;
+    text-transform: uppercase; padding: 4px 14px; border-radius: 6px;
+    margin-bottom: 12px;
+}
+.tour-title { font-size: 52px; text-shadow: 4px 4px black; margin-bottom: 6px; line-height: 1.1; }
+.attr-location { font-size: 16px; color: rgba(255,255,0,0.45); margin-bottom: 20px; letter-spacing: 1px; }
+
+.main-image-container {
+    border: 5px solid #fbc02d; border-radius: 28px; overflow: hidden;
+    height: 360px; margin-bottom: 22px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+}
+.main-image-container img {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; inset: 0;
+    transition: opacity 0.3s;
+}
+.img-fallback {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: rgba(255,255,255,0.7);
+    text-align: center; padding: 20px; line-height: 1.3;
+}
+
+.description-box {
+    background: rgba(0,0,0,0.4); border-radius: 20px;
+    padding: 20px 22px; line-height: 1.6; font-size: 17px;
+    color: rgba(255,255,0,0.85); border: 2px solid rgba(255,255,0,0.15);
+}
+
+/* Quick facts strip */
+.facts-strip {
+    display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 0;
+}
+.fact-chip {
+    background: rgba(0,0,0,0.3); border: 2px solid rgba(251,192,45,0.35);
+    border-radius: 20px; padding: 5px 16px; font-size: 14px;
+    color: rgba(255,255,0,0.6); letter-spacing: 1px;
+}
+
+/* ── RIGHT COL ── */
+.available-tours-header { font-size: 28px; margin-bottom: 14px; text-shadow: 2px 2px black; }
+
+/* Carousel */
+.carousel-box {
+    background: rgba(0,0,0,0.3); border-radius: 20px;
+    padding: 18px 16px; margin-bottom: 22px;
+    border: 2px solid rgba(251,192,45,0.3);
+}
+.carousel-content { display: flex; align-items: center; gap: 14px; }
+.nav-arrow { font-size: 42px; cursor: pointer; user-select: none; color: #fbc02d; transition: 0.15s; flex-shrink: 0; }
+.nav-arrow:hover { color: yellow; transform: scale(1.15); }
+.carousel-inner { flex: 1; }
+.c-name  { font-size: 20px; color: yellow; text-shadow: 2px 2px black; margin-bottom: 3px; }
+.c-meta  { font-size: 13px; color: #cddc39; margin-bottom: 6px; }
+.c-desc  { font-size: 15px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+.c-price { font-size: 26px; color: #cddc39; text-shadow: 2px 2px black; margin-top: 6px; }
+.carousel-img-wrapper {
+    width: 160px; height: 125px; border: 3px solid #fbc02d;
+    border-radius: 10px; overflow: hidden; flex-shrink: 0;
+    background: rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+}
+.carousel-img-wrapper img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.carousel-img-fallback { font-size: 13px; color: rgba(255,255,255,0.5); text-align: center; padding: 8px; }
+.carousel-dots { display: flex; gap: 7px; justify-content: center; margin-top: 12px; }
+.cdot { width: 11px; height: 11px; border-radius: 50%; background: rgba(251,192,45,0.2); border: 2px solid #fbc02d; cursor: pointer; transition: 0.2s; }
+.cdot.active { background: #fbc02d; }
+
+/* No tours state */
+.no-tours { text-align: center; padding: 28px; color: rgba(255,255,0,0.3); font-size: 18px; }
+
+/* Action buttons */
+.action-buttons { display: flex; gap: 14px; margin-bottom: 24px; }
+.btn-white {
+    flex: 1; background: white; color: black; border: none;
+    padding: 12px 24px; border-radius: 50px;
+    font-family: 'Luckiest Guy'; font-size: 20px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.3); transition: 0.15s; text-align: center;
+}
+.btn-white:hover  { background: #f5f5f5; transform: translateY(-2px); }
+.btn-white:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.3); }
+.btn-book {
+    flex: 1; background: #cddc39; color: #1a4d2e; border: none;
+    padding: 12px 24px; border-radius: 50px;
+    font-family: 'Luckiest Guy'; font-size: 20px; cursor: pointer;
+    box-shadow: 0 4px 0 #689f38; transition: 0.15s; text-align: center;
+}
+.btn-book:hover  { background: #ddef48; transform: translateY(-2px); }
+.btn-book:active { transform: translateY(3px); box-shadow: 0 1px 0 #689f38; }
+
+/* Reviews preview */
+.reviews-header { font-size: 22px; margin-bottom: 12px; text-shadow: 2px 2px black; }
+.avg-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.avg-num { font-size: 38px; text-shadow: 3px 3px black; }
+
+.review-preview {
+    background: #fce4ec; border-radius: 22px; border: 3px solid black;
+    padding: 14px 16px; color: black; max-height: 240px; overflow-y: auto;
+}
+.review-preview::-webkit-scrollbar { width: 4px; }
+.review-preview::-webkit-scrollbar-thumb { background: #fbc02d; border-radius: 2px; }
+
+.rev-item { border-bottom: 1.5px solid rgba(0,0,0,0.1); padding: 9px 0; }
+.rev-item:last-child { border-bottom: none; }
+.rev-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.rev-name { font-size: 14px; font-weight: 900; }
+.rev-stars { margin-left: auto; font-size: 15px; }
+.rev-text  { font-size: 14px; font-weight: 700; }
+.rev-more  { text-align: right; font-size: 13px; cursor: pointer; color: #888; margin-top: 6px; }
+.rev-more:hover { color: #333; }
+.no-reviews { color: rgba(0,0,0,0.3); font-size: 16px; text-align: center; padding: 24px 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="home.html">
+    <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+    <span>TOURIST TOME</span>
+  </a>
+  <div class="nav-links">
+    <a href="home.html">HOME</a>
+    <a href="tours.html">ATTRACTION</a>
+    <a href="bookings.html">BOOK TOUR</a>
+    <a href="mybookings.html">MYBOOKING</a>
+    <a href="Review.html">REVIEWS</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser"></span>
+    <button class="nav-logout" id="navLogout">LOGOUT</button>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <a class="back-nav" href="home.html">&#8592;</a>
+  <div class="main-layout">
+
+    <!-- LEFT COL -->
+    <section id="leftCol">
+      <div class="attr-category-badge" id="attrCat">—</div>
+      <h1 class="tour-title" id="attrTitle">Loading...</h1>
+      <div class="attr-location" id="attrLoc"></div>
+
+      <div class="main-image-container" id="mainImgWrap">
+        <img id="mainImg" src="" alt="">
+        <div class="img-fallback" id="mainFallback"></div>
+      </div>
+
+      <div class="description-box" id="attrDesc">—</div>
+
+      <div class="facts-strip" id="factStrip"></div>
+    </section>
+
+    <!-- RIGHT COL -->
+    <section id="rightCol">
+      <h2 class="available-tours-header">AVAILABLE TOURS</h2>
+
+      <div id="tourArea"></div>
+
+      <div class="action-buttons">
+        <button class="btn-white" onclick="location.href='tours.html'">MORE TOURS</button>
+        <button class="btn-book"  id="bookBtn" onclick="bookNow()">BOOK NOW</button>
+      </div>
+
+      <div class="reviews-header">
+        REVIEWS
+        <span id="avgRow" style="font-size:16px;color:rgba(255,255,0,0.5);margin-left:12px;"></span>
+      </div>
+      <div class="review-preview" id="reviewArea"></div>
+    </section>
+  </div>
+</div>
+
+<script src="tt-data.js"></script>
+<script>
+// ── Read attraction ID from URL ?id=N ─────────────────────
+var params = new URLSearchParams(location.search);
+var attrID = parseInt(params.get('id')) || 1;
+var attr   = TT.ATTRACTIONS.find(function(a){ return a.id === attrID; }) || TT.ATTRACTIONS[0];
+var tours  = TT.TOURS.filter(function(t){ return t.attrID === attr.id; });
+var curTour = 0;
+
+// ── Update page title ─────────────────────────────────────
+document.title = 'Tourist Tome - ' + attr.name;
+
+// ── Fill LEFT column ──────────────────────────────────────
+document.getElementById('attrCat').textContent   = attr.cat;
+document.getElementById('attrTitle').textContent = attr.name.toUpperCase();
+document.getElementById('attrLoc').textContent   = '📍 ' + attr.loc;
+document.getElementById('attrDesc').textContent  = attr.desc;
+
+// Main image with colour fallback
+var imgEl      = document.getElementById('mainImg');
+var fallbackEl = document.getElementById('mainFallback');
+var wrapEl     = document.getElementById('mainImgWrap');
+wrapEl.style.background = attr.color;
+fallbackEl.textContent  = attr.name;
+imgEl.src = attr.img;
+imgEl.alt = attr.name;
+imgEl.onerror = function() { this.style.opacity = 0; };
+
+// Facts strip
+document.getElementById('factStrip').innerHTML =
+    '<div class="fact-chip">📍 ' + attr.loc + '</div>' +
+    '<div class="fact-chip">🏷 ' + attr.cat + '</div>' +
+    '<div class="fact-chip">💰 Entry from $' + attr.price + '</div>' +
+    '<div class="fact-chip">⭐ ' + attr.rating + ' / 5</div>';
+
+// ── Fill TOUR carousel ────────────────────────────────────
+function renderTourArea() {
+    var area = document.getElementById('tourArea');
+    if (!tours.length) {
+        area.innerHTML = '<div class="no-tours">No tours available yet for this attraction.</div>';
+        document.getElementById('bookBtn').disabled = true;
+        document.getElementById('bookBtn').style.opacity = '0.35';
+        return;
+    }
+
+    var dotsHTML = tours.map(function(_, i) {
+        return '<div class="cdot' + (i === 0 ? ' active' : '') + '" onclick="goTo(' + i + ')"></div>';
+    }).join('');
+
+    area.innerHTML =
+        '<div class="carousel-box">' +
+            '<div class="carousel-content">' +
+                '<span class="nav-arrow" onclick="slide(-1)">&#10094;</span>' +
+                '<div class="carousel-inner">' +
+                    '<div class="c-name"  id="cName"></div>' +
+                    '<div class="c-meta"  id="cMeta"></div>' +
+                    '<div class="c-desc"  id="cDesc"></div>' +
+                    '<div class="c-price" id="cPrice"></div>' +
+                '</div>' +
+                '<div class="carousel-img-wrapper">' +
+                    '<img id="cImg" src="" alt="">' +
+                    '<div class="carousel-img-fallback" id="cImgFallback"></div>' +
+                '</div>' +
+                '<span class="nav-arrow" onclick="slide(1)">&#10095;</span>' +
+            '</div>' +
+            '<div class="carousel-dots" id="carDots">' + dotsHTML + '</div>' +
+        '</div>';
+
+    goTo(0);
+}
+
+function goTo(n) {
+    curTour = n;
+    var t = tours[n];
+    document.getElementById('cName').textContent  = t.name;
+    document.getElementById('cMeta').innerHTML    = t.duration + ' &middot; Max ' + t.cap + ' &middot; ' + t.operator;
+    document.getElementById('cDesc').textContent  = t.desc;
+    document.getElementById('cPrice').textContent = '$' + t.price + ' per person';
+
+    var img = document.getElementById('cImg');
+    var fb  = document.getElementById('cImgFallback');
+    img.src = t.img; img.alt = t.name;
+    img.onerror = function() { this.style.opacity = 0; fb.textContent = t.name; };
+    img.onload  = function() { fb.textContent = ''; };
+
+    document.querySelectorAll('.cdot').forEach(function(d, i) {
+        d.classList.toggle('active', i === n);
+    });
+}
+
+function slide(dir) { goTo((curTour + dir + tours.length) % tours.length); }
+
+function bookNow() {
+    var tourID = tours.length ? tours[curTour].id : '';
+    location.href = 'bookings.html' + (tourID ? '?tourID=' + tourID : '');
+}
+
+// ── Fill REVIEWS ──────────────────────────────────────────
+function renderReviews() {
+    // Collect reviews for all tours of this attraction
+    var allRevs = [];
+    tours.forEach(function(t) {
+        TT.reviews.forTour(t.id).forEach(function(r) { allRevs.push(r); });
+    });
+
+    // Show avg rating in header
+    var avgEl = document.getElementById('avgRow');
+    if (allRevs.length) {
+        var avg = (allRevs.reduce(function(s,r){ return s+r.rating; }, 0) / allRevs.length).toFixed(1);
+        avgEl.innerHTML = TT.starsHTML(avg, 14) + ' <span>' + avg + ' (' + allRevs.length + ')</span>';
+    } else {
+        avgEl.textContent = '';
+    }
+
+    var area = document.getElementById('reviewArea');
+    if (!allRevs.length) {
+        area.innerHTML = '<div class="no-reviews">No reviews yet — be the first!</div>';
+        return;
+    }
+
+    // Show up to 4 most recent
+    var shown = allRevs.slice(0, 4);
+    area.innerHTML = shown.map(function(r) {
+        return '<div class="rev-item">' +
+            '<div class="rev-row">' +
+                '<span class="rev-name">' + (r.userName || 'Anonymous').toUpperCase() + '</span>' +
+                '<span class="rev-stars">' + TT.starsHTML(r.rating, 14) + '</span>' +
+            '</div>' +
+            '<div class="rev-text">' + (r.comment || '') + '</div>' +
+        '</div>';
+    }).join('') +
+    (allRevs.length > 4 ?
+        '<div class="rev-more" onclick="location.href=\'Review.html\'">See all ' + allRevs.length + ' reviews &#8594;</div>' : '');
+}
+
+renderTourArea();
+renderReviews();
+</script>
+</body>
+</html>
