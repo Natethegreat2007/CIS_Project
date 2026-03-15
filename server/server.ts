@@ -1,7 +1,14 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-
+//import authRoutes        from './routes/auth';
+import attractionRoutes  from './routes/attraction';
+//import tourRoutes        from './routes/tour';
+//import bookingRoutes     from './routes/booking';
+//import reviewRoutes      from './routes/review';
+//import operatorRoutes    from './routes/operator';
+//import analyticsRoutes   from './routes/analytics';
+import userRoutes from "./routes/users";
 const app = express();
 
 // ── MIDDLEWARE ────────────────────────────────────────────
@@ -9,13 +16,14 @@ app.use(express.json());
 app.use(cors());
 
 // ── ROUTES ────────────────────────────────────────────────
-app.use('/api/auth',        require('/routes/auth.ts'));
-app.use('/api/attractions', require('/routes/attraction.ts'));
-app.use('/api/tours',       require('/routes/tour.ts'));
-app.use('/api/bookings',    require('/routes/booking.ts'));
-app.use('/api/reviews',     require('/routes/review.ts'));
-app.use('/api/operators',   require('/routes/operator.ts'));
-app.use('/api/analytics',   require('/routes/analytics.ts'));
+//app.use('/api/auth',        authRoutes);
+app.use('/api/attractions', attractionRoutes);
+app.use('/api/users', userRoutes)
+//app.use('/api/tours',       tourRoutes);
+//app.use('/api/bookings',    bookingRoutes);
+//app.use('/api/reviews',     reviewRoutes);
+//app.use('/api/operators',   operatorRoutes);
+//app.use('/api/analytics',   analyticsRoutes);
 
 // ── TEST ROUTE ────────────────────────────────────────────
 app.get('/api/test', (req: Request, res: Response) => {
