@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-//import authRoutes        from './routes/auth';
+import pool from './db';
+
+import authRoutes from './routes/auth';
 import attractionRoutes  from './routes/attraction';
 //import tourRoutes        from './routes/tour';
 //import bookingRoutes     from './routes/booking';
@@ -16,7 +18,7 @@ app.use(express.json());
 app.use(cors());
 
 // ── ROUTES ────────────────────────────────────────────────
-//app.use('/api/auth',        authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/attractions', attractionRoutes);
 app.use('/api/users', userRoutes)
 //app.use('/api/tours',       tourRoutes);
@@ -30,6 +32,14 @@ app.get('/api/test', (req: Request, res: Response) => {
     res.status(200).json({ message: 'Tourist Tome API is alive' });
 });
 
+app.get('/api/dbtest', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT 1 + 1 AS result');
+        res.status(200).json(rows);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+});
 // ── 404 HANDLER ───────────────────────────────────────────
 app.use((req: Request, res: Response) => {
     res.status(404).json({ error: 'Route not found.' });

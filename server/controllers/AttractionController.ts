@@ -5,7 +5,7 @@ const AttractionController = {
     create: async(req: Request, res: Response): Promise<void> =>{
       try{
           const body = req.body;
-          //const attrID = AttrService.create(body)
+          //TODO: const attrID = AttrService.create(body)
           res.status(201).json({attrID: 99, message:'Attraction created.'});
       }catch(err){
           res.status(500).json({error:'Server Error.'});
@@ -15,8 +15,8 @@ const AttractionController = {
     getAll: async(req: Request, res: Response): Promise<void> =>
     {
         try{
-           // const {catID, page, limit} = req.query;
-            //AttrService.getAll()
+           /*TODO: const {catID, page, limit} = req.query;
+            TODO: AttrService.getAll()*/
             const data = [
                 {attrID:1, title: 'Xunantunich', location: 'Cayo District'},
                 {attrID:2, title: 'Belize Barrier Reef', location: 'Caribbean Sea'}
@@ -43,7 +43,7 @@ const AttractionController = {
         try{
             const id = Number(req.params.id);
             const body = req.body;
-            //AttrService.update(id, body)
+            //TODO: AttrService.update(id, body)
             res.status(200).json({message:'Attraction updated.'});
         }catch(err){
             res.status(500).json({error:'Server Error.'});
@@ -53,14 +53,14 @@ const AttractionController = {
     updatePartial: async(req: Request, res: Response): Promise<void> =>{
         const id = Number(req.params.id);
         const fields = req.body;
-        //AttrService.patch(id, fields);
+        //TODO: AttrService.patch(id, fields);
         res.status(200).json({message:'Attraction fields updated.'});
     },
     //DELETE
     remove: async(req: Request, res: Response): Promise<void> =>{
         try{
             const id = Number(req.params.id);
-            //AttrService.remove(id);
+            //TODO: AttrService.remove(id);
             res.status(200).json({message:'Attraction deleted.'});
         }catch(err) {
             res.status(500).json({error: 'Server Error.'});

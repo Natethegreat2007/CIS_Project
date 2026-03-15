@@ -3,8 +3,8 @@ import {Request, Response} from 'express';
 const UserController = {
     getAll: async(req: Request, res: Response):Promise<void>=>{
         try{
-            //const {userID, page, limit} = req.query;
-            //UserService.getAll()
+            //TODO: const {userID, page, limit} = req.query;
+            //TODO: UserService.getAll()
             const data = [
                 {userID:1, email:'<EMAIL>', fName:'Nathan', lName:'Scott'},
                 {userID:2, email:'<EMAIL>', fName:'Nicole', lName:'Burke'},
@@ -30,7 +30,7 @@ const UserController = {
         try{
             const id = Number(req.params.id);
             const fields = req.body ;
-            //UserService.patch(id, fields);
+            //TODO: UserService.patch(id, fields);
             res.status(200).json({message:'User updated.'});
         }catch(err){
             res.status(500).json({error:'Server Error.'});
@@ -39,7 +39,7 @@ const UserController = {
     deactivate: async(req: Request, res: Response): Promise<void> =>{
         const id = Number(req.params.id);
         const userId = req.user?.id;
-        //UserService.deactivate(id, userId);
+        //TODO: UserService.deactivate(id, userId);
 
         res.status(200).json({message:'User deactivated.'});
     },
@@ -47,7 +47,7 @@ const UserController = {
     suspend: async(req: Request, res: Response): Promise<void> =>{
         try{
             const id = Number(req.params.id);
-            //UserService.suspend(id);
+            //TODO: UserService.suspend(id);
             res.status(200).json({message:'User suspended.'});
         }catch(err){
             res.status(500).json({error:'Server Error.'});
@@ -56,7 +56,7 @@ const UserController = {
     activate: async(req: Request, res: Response): Promise<void> =>{
         try{
             const id = Number(req.params.id);
-            //UserService.activate(id);
+            //TODO: UserService.activate(id);
             res.status(200).json({message:'User activated.'});
         }catch(err){
             res.status(500).json({error:'Server Error.'});
@@ -66,7 +66,7 @@ const UserController = {
         try{
             const id = Number(req.params.id);
             const {role} = req.body;
-            //UserService.roleSet(id, role);
+            //TODO: UserService.roleSet(id, role);
             if(!['Admin', 'Operator', 'Tourist'].includes(role)){
                 res.status(400).json({error:'Invalid role.'});
                 return;
