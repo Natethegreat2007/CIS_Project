@@ -37,11 +37,15 @@ const UserController = {
         }
     },
     deactivate: async(req: Request, res: Response): Promise<void> =>{
+        try{
         const id = Number(req.params.id);
         const userId = req.user?.id;
         //TODO: UserService.deactivate(id, userId);
 
-        res.status(200).json({message:'User deactivated.'});
+        res.status(200).json({message:'User deactivated.'});}
+        catch(err){
+            res.status(500).json({error:'Server Error.'});
+        }
     },
 
     suspend: async(req: Request, res: Response): Promise<void> =>{
@@ -66,11 +70,11 @@ const UserController = {
         try{
             const id = Number(req.params.id);
             const {role} = req.body;
-            //TODO: UserService.roleSet(id, role);
             if(!['Admin', 'Operator', 'Tourist'].includes(role)){
                 res.status(400).json({error:'Invalid role.'});
                 return;
             }
+            //TODO: UserService.roleSet(id, role);
             res.status(200).json({message:'User role updated.'});
         } catch (err){
             res.status(500).json({error:'Server Error.'});
