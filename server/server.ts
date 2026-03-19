@@ -12,7 +12,7 @@ import attractionRoutes  from './routes/attraction';
 //import analyticsRoutes from './routes/analytics';
 import userRoutes from "./routes/users";
 const app = express();
-
+//test
 //MIDDLEWARE
 app.use(express.json());
 app.use(cors());
