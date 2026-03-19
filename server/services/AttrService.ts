@@ -1,6 +1,5 @@
 import AttractionRepository from "../repositories/AttrRepository";
 import {Attraction} from "../types";
-import AttractionController from "../controllers/AttractionController";
 
 const AttrService = {
     getAll: async({catID, page, limit}:{
