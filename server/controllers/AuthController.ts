@@ -1,49 +1,44 @@
 import { Request, Response } from 'express';
+import AuthService            from '../services/AuthService';
 
 const AuthController = {
 
     login: async (req: Request, res: Response): Promise<void> => {
         try {
-            // extract
             const { email, password } = req.body;
-
-            // validate body exists
             if (!email || !password) {
                 res.status(400).json({ error: 'Email and password required.' });
                 return;
             }
-
-            // TODO: replace with AuthService.login(email, password)
-            const token = 'stub-token';
-            const role  = 'Tourist';
-
-            res.status(200).json({ token, role });
+            const result = await AuthService.login(email, password);
+            if (!result.ok) {
+                res.status(401).json({ error: result.error });
+                return;
+            }
+            res.status(200).json({ token: result.token, role: result.role });
         } catch (err) {
+            console.error('LOGIN ERROR:', err);  // ← add this
             res.status(500).json({ error: 'Server error.' });
         }
     },
 
     register: async (req: Request, res: Response): Promise<void> => {
         try {
-            // extract
             const { email, password, fName, lName, role } = req.body;
-
-            // validate all fields present
             if (!email || !password || !fName || !lName) {
                 res.status(400).json({ error: 'All fields required.' });
                 return;
             }
-
-            // validate role value
             if (role && !['Tourist', 'Operator'].includes(role)) {
                 res.status(400).json({ error: 'Invalid role.' });
                 return;
             }
-
-            // TODO: replace with AuthService.register({ email, password, fName, lName, role })
-            const token = 'stub-token';
-
-            res.status(201).json({ token, role: role || 'Tourist' });
+            const result = await AuthService.register({ email, password, fName, lName, role });
+            if (!result.ok) {
+                res.status(409).json({ error: result.error });
+                return;
+            }
+            res.status(201).json({ token: result.token });
         } catch (err) {
             res.status(500).json({ error: 'Server error.' });
         }
@@ -51,8 +46,6 @@ const AuthController = {
 
     logout: async (req: Request, res: Response): Promise<void> => {
         try {
-            // JWT is stateless — client drops the token
-            // nothing to do server side in prototype
             res.status(200).json({ message: 'Logged out.' });
         } catch (err) {
             res.status(500).json({ error: 'Server error.' });

@@ -61,7 +61,7 @@ export interface Operator{
     operatorID:number;
     companyName:string;
     contactEmail:string;
-    phoneNumber:string;
+    phoneNum:string;
 }
 export interface Payment{
     amount:number;

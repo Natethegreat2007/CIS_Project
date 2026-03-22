@@ -1,6 +1,9 @@
 # Use this workspace to collaborate
 workspace:
   id: 36960990-40d4-4522-8050-a9b54bbd473a
+cloudResources:
+  environments:
+    ..\postman\environments\New Environment.environment.yaml: 7836e7a8-01b8-468d-a627-a252ca910307
 
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:
