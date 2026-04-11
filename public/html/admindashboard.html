@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tourist Tome - Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: #1a4d2e;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+    background-size: 40px 100%;
+    font-family: 'Luckiest Guy', cursive;
+    color: #ffff00;
+    min-height: 100vh;
+}
+
+
+nav {
+    position: sticky; top: 0; z-index: 200;
+    background: #0d3320;
+    border-bottom: 4px solid #fbc02d;
+    display: flex; align-items: center;
+    padding: 0 30px; height: 70px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.nav-logo {
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none; margin-right: 28px; flex-shrink: 0;
+}
+.nav-logo img { height: 46px; width: auto; }
+.nav-logo span {
+    font-family: 'Luckiest Guy';
+    font-size: 1.55rem; color: yellow;
+    text-shadow: 2px 2px black; letter-spacing: 2px;
+}
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a {
+    color: rgba(255,255,0,0.6);
+    text-decoration: none;
+    font-family: 'Luckiest Guy';
+    font-size: 1rem; letter-spacing: 1px;
+    padding: 8px 15px; border-radius: 10px;
+    transition: 0.2s;
+}
+.nav-links a:hover, .nav-links a.active {
+    color: yellow; background: rgba(255,255,0,0.12);
+}
+.nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.nav-search {
+    background: white; border-radius: 50px;
+    border: 3px solid black; padding: 5px 16px;
+    display: flex; align-items: center; gap: 6px;
+}
+.nav-search input {
+    border: none; outline: none;
+    font-family: 'Luckiest Guy'; font-size: 0.85rem;
+    width: 145px; color: #1a4d2e; background: transparent;
+}
+.nav-user {
+    background: rgba(255,255,0,0.12);
+    border: 2px solid #fbc02d; border-radius: 20px;
+    padding: 4px 14px; font-size: 0.8rem;
+    color: yellow; letter-spacing: 1px;
+}
+.nav-logout {
+    background: yellow; color: #1a4d2e;
+    border: none; border-radius: 12px;
+    padding: 8px 18px; font-family: 'Luckiest Guy';
+    font-size: 0.95rem; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 4px 0 #888800;
+    transition: 0.1s;
+}
+.nav-logout:hover { background: #eeee00; }
+.nav-logout:active { transform: translateY(3px); box-shadow: 0 1px 0 #888800; }
+
+.page-wrap { max-width: 1280px; margin: 0 auto; padding: 36px 40px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+.page-title { font-size: 60px; text-shadow: 4px 4px black; margin-bottom: 30px; letter-spacing: 2px; }
+.section-title { font-size: 36px; text-shadow: 3px 3px black; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,0,0.2); padding-bottom: 8px; }
+.back-nav { font-size: 45px; color: orange; cursor: pointer; display: inline-block; margin-bottom: 12px; text-decoration: none; transition: transform 0.2s; }
+.back-nav:hover { transform: translateX(-8px); }
+.input-field {
+    width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d;
+    border-radius: 20px; padding: 12px 18px; color: #ffff00;
+    font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
+    box-sizing: border-box; transition: border-color 0.2s;
+}
+.input-field:focus { border-color: yellow; }
+.input-field::placeholder { color: rgba(255,255,0,0.4); }
+.input-field option { background: #1a4d2e; }
+.ybtn {
+    background: #cddc39; color: #1a4d2e; border: none;
+    border-radius: 14px; padding: 13px 30px;
+    font-family: 'Luckiest Guy'; font-size: 20px; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 5px 0 #689f38; transition: 0.1s;
+}
+.ybtn:hover { background: #ddef48; }
+.ybtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #689f38; }
+.alert { padding: 12px 18px; border-radius: 14px; font-size: 17px; margin-bottom: 16px; display: none; }
+.alert-ok  { background: rgba(205,220,57,0.12); border: 2px solid #cddc39; color: #cddc39; }
+.alert-err { background: rgba(255,82,82,0.12);  border: 2px solid #ff5252;  color: #ff5252; }
+
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 18px; }
+.input-item { display: flex; flex-direction: column; gap: 10px; }
+.input-item label { font-size: 20px; }
+.input-item input, .input-item textarea, .input-item select {
+    background: rgba(0,0,0,0.3); border: 3px solid #fbc02d;
+    border-radius: 18px; padding: 12px 16px; color: yellow;
+    font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
+    box-sizing: border-box; transition: border-color 0.2s;
+}
+.input-item textarea {
+    min-height: 90px; resize: vertical;
+}
+.input-item input:focus, .input-item textarea:focus, .input-item select:focus {
+    border-color: yellow;
+}
+.input-item input::placeholder, .input-item textarea::placeholder { color: rgba(255,255,0,0.4); }
+.input-item select option { background: #1a4d2e; }
+h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 6px; margin: 36px 0 20px; }
+.user-manager { display: flex; gap: 36px; margin-top: 24px; overflow-x: auto; padding-bottom: 18px; }
+.user-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; }
+.avatar { width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 3px solid #fbc02d; background: #cbd5e0; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.edit-btn { background: #fbc02d; color: #1a4d2e; border: none; padding: 10px 22px; border-radius: 10px; font-family: 'Luckiest Guy'; cursor: pointer; font-size: 18px; box-shadow: 0 4px 0 #b8860b; transition: 0.1s; }
+.edit-btn:hover { background: #f5b800; }
+.edit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #b8860b; }
+
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="dashboard.html">
+    <img src="../images/logo.png" alt="Tourist Tome">
+    <span>TOURIST TOME</span>
+  </a>
+  <div class="nav-links"><a href="dashboard.html">DASHBOARD</a><a href="admindashboard.html" class="active">ATTRACTIONS</a><a href="managetour.html">MANAGE TOUR</a></div>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser"></span>
+    <button class="nav-logout" onclick="window.location.href='login.html'">LOGOUT</button>
+  </div>
+</nav>
+<div class="page-wrap">
+  <a class="back-nav" href="dashboard.html">&#8592;</a>
+  <h1 class="page-title">ADMIN DASHBOARD</h1>
+  <div id="createAlert" class="alert alert-ok">Attraction created successfully!</div>
+
+  <h2>CREATE ATTRACTION</h2>
+  <div class="form-grid">
+    <div class="input-item">
+      <label>Attraction Name:</label>
+      <input type="text" id="attrName" placeholder="Enter..">
+    </div>
+    <div class="input-item">
+      <label>Attraction Type:</label>
+      <select id="attrType">
+        <option value="">Select type...</option>
+        <option>Archaeological</option>
+        <option>Marine</option>
+        <option>Wildlife</option>
+        <option>Cultural</option>
+      </select>
+      <label>Attraction Price:</label>
+      <input type="number" id="attrPrice" placeholder="Enter..">
+    </div>
+    <div class="input-item">
+      <label>Attraction Description:</label>
+      <textarea id="attrDesc" placeholder="Enter.."></textarea>
+    </div>
+  </div>
+  <button class="ybtn" style="margin-top:20px;" onclick="createAttraction()">CREATE ATTRACTION</button>
+
+  <h2>USER MANAGER</h2>
+  <div class="user-manager">
+    <div class="user-card"><div class="avatar"><img src="../images/avatar1.jpg" onerror="this.style.display='none'" alt=""></div><span>Nathan Scott</span><span style="font-size:13px;color:#cddc39;">Admin</span><button class="edit-btn">EDIT</button></div>
+    <div class="user-card"><div class="avatar"><img src="../images/avatar2.jpg" onerror="this.style.display='none'" alt=""></div><span>Nicole Burke</span><span style="font-size:13px;color:#cddc39;">Operator</span><button class="edit-btn">EDIT</button></div>
+    <div class="user-card"><div class="avatar"><img src="../images/avatar3.jpg" onerror="this.style.display='none'" alt=""></div><span>Jon Moore</span><span style="font-size:13px;color:#cddc39;">Operator</span><button class="edit-btn">EDIT</button></div>
+    <div class="user-card"><div class="avatar"><img src="../images/avatar4.jpg" onerror="this.style.display='none'" alt=""></div><span>Gavin Harban</span><span style="font-size:13px;color:#cddc39;">Tourist</span><button class="edit-btn">EDIT</button></div>
+  </div>
+</div>
+<script>
+function createAttraction() {
+  var n = document.getElementById('attrName').value.trim();
+  var t = document.getElementById('attrType').value;
+  if (!n || !t) { alert('Name and type are required.'); return; }
+  var al = document.getElementById('createAlert');
+  al.style.display = 'block';
+  setTimeout(function(){ al.style.display = 'none'; }, 3000);
+  document.getElementById('attrName').value = '';
+  document.getElementById('attrType').value = '';
+  document.getElementById('attrPrice').value = '';
+  document.getElementById('attrDesc').value = '';
+}
+</script>
+
+<script>
+(function(){
+    var u = sessionStorage.getItem('tt_user');
+    if (u) { var el = document.getElementById('navUser'); if (el) el.textContent = u.toUpperCase(); }
+})();
+</script>
+</body>
+</html>

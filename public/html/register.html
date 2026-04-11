@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tourist Tome - Register</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+body {
+    margin: 0; font-family: 'Luckiest Guy', sans-serif;
+    background-image: url("../images/jungle-bg2.jpg");
+    background-size: cover; background-position: center;
+    background-color: #1a4d2e;
+    text-align: center; color: white; min-height: 100vh; padding-bottom: 60px;
+}
+h1 { margin-top: 55px; font-size: 50px; color: yellow; text-shadow: 4px 4px black; line-height: 1.2; }
+
+.step { display: none; animation: fadeIn 0.3s ease; }
+.step.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+/* Step dots */
+.step-dots { display: flex; justify-content: center; gap: 10px; margin: 18px 0 0; }
+.dot { width: 13px; height: 13px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid #fbc02d; transition: 0.2s; }
+.dot.active { background: yellow; }
+.dot.done   { background: #cddc39; border-color: #cddc39; }
+
+/* Step 1 — method */
+.button-container { margin-top: 50px; }
+.method-btn {
+    display: block; margin: 22px auto; padding: 18px; width: 350px;
+    border-radius: 30px; border: none; font-size: 20px;
+    font-family: 'Luckiest Guy'; color: #1a4d2e; background: white;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.25); cursor: pointer; transition: 0.2s;
+}
+.method-btn:hover { background: #f5f5f5; transform: translateY(-2px); }
+.google-wrap { display: flex; justify-content: center; margin: 22px 0; }
+
+/* Step 2 — account type */
+.type-grid { display: flex; justify-content: center; gap: 22px; flex-wrap: wrap; margin: 28px 0; }
+.type-card {
+    background: rgba(0,0,0,0.5); border: 4px solid #fbc02d;
+    border-radius: 20px; padding: 26px 22px; width: 210px; cursor: pointer; transition: 0.2s;
+}
+.type-card:hover  { background: rgba(0,0,0,0.7); transform: translateY(-4px); }
+.type-card.selected { background: rgba(205,220,57,0.15); border-color: yellow; box-shadow: 0 0 0 4px rgba(255,255,0,0.2); }
+.type-name { font-size: 22px; color: yellow; text-shadow: 2px 2px black; margin-bottom: 6px; }
+.type-desc { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.4; }
+.type-icon { font-size: 42px; margin-bottom: 10px; }
+
+/* Step 3 — form */
+.form-card {
+    max-width: 560px; margin: 24px auto 0; text-align: left;
+    background: rgba(0,0,0,0.5); border: 4px solid #fbc02d; border-radius: 24px; padding: 28px 30px;
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+.form-full { grid-column: 1 / -1; }
+.field-label { display: block; font-size: 15px; color: #cddc39; margin-bottom: 6px; letter-spacing: 1px; }
+.field-input {
+    width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d; border-radius: 15px;
+    padding: 11px 15px; color: yellow; font-family: 'Luckiest Guy'; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.2s;
+}
+.field-input:focus { border-color: yellow; }
+.field-input::placeholder { color: rgba(255,255,0,0.3); }
+.field-input option { background: #1a4d2e; }
+.operator-only { display: none; }
+.operator-only.show { display: contents; }
+.err { background: rgba(255,50,50,0.15); border: 2px solid #ff5252; border-radius: 12px; padding: 10px 14px; color: #ff5252; font-size: 14px; margin-bottom: 14px; display: none; }
+
+/* Buttons */
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+.nav-back { background: rgba(255,255,255,0.1); color: white; border: 2px solid rgba(255,255,255,0.25); border-radius: 14px; padding: 10px 22px; font-family: 'Luckiest Guy'; font-size: 17px; cursor: pointer; transition: 0.15s; }
+.nav-back:hover { background: rgba(255,255,255,0.2); }
+.nav-next, .submit-btn { background: yellow; color: #1a4d2e; border: none; border-radius: 14px; padding: 12px 30px; font-family: 'Luckiest Guy'; font-size: 19px; cursor: pointer; box-shadow: 0 5px 0 #888800; transition: 0.1s; }
+.nav-next:hover, .submit-btn:hover { background: #eeee00; }
+.nav-next:active, .submit-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #888800; }
+.submit-btn { width: 100%; font-size: 22px; margin-top: 18px; }
+.login-link { font-size: 15px; color: rgba(255,255,0,0.45); margin-top: 16px; }
+.login-link a { color: #cddc39; text-decoration: none; }
+.login-link a:hover { color: yellow; }
+
+/* Success */
+.success-screen { display: none; margin-top: 36px; animation: fadeIn 0.4s ease; }
+.success-screen.show { display: block; }
+.success-screen h2 { font-size: 44px; color: #cddc39; text-shadow: 4px 4px black; margin-bottom: 10px; }
+.success-screen p { font-size: 18px; color: rgba(255,255,255,0.55); margin-bottom: 24px; }
+.login-now { display: inline-block; background: yellow; color: #1a4d2e; text-decoration: none; padding: 16px 44px; border-radius: 20px; font-size: 24px; box-shadow: 0 6px 0 #888800; }
+.toucan-wrap { margin-top: 20px; }
+.toucan-wrap img { width: 300px; }
+</style>
+</head>
+<body>
+
+<div class="step-dots" id="stepDots">
+  <div class="dot active" id="dot1"></div>
+  <div class="dot" id="dot2"></div>
+  <div class="dot" id="dot3"></div>
+</div>
+
+<!-- STEP 1 -->
+<div class="step active" id="step1">
+  <h1>REGISTER<br>AND BEGIN<br>THE ADVENTURE!</h1>
+  <div class="button-container">
+    <!-- Google sign-up -->
+    <div id="g_id_onload"
+         data-client_id="53379048140-sft8no01d3p8cacouia32jmevk7msssf.apps.googleusercontent.com"
+         data-callback="handleGoogleRegister"
+         data-auto_prompt="false"></div>
+    <div class="google-wrap">
+      <div class="g_id_signin" data-type="standard" data-size="large"
+           data-theme="outline" data-text="signup_with"
+           data-shape="pill" data-width="350"></div>
+    </div>
+    <button class="method-btn" onclick="goStep(2)">CONTINUE WITH EMAIL</button>
+  </div>
+  <div class="login-link">Already have an account? <a href="login.html">Login here</a></div>
+  <div class="toucan-wrap"><img src="../images/toucan.png" alt="Toucan Mascot" onerror="this.style.display='none'"></div>
+</div>
+
+<!-- STEP 2 — Account type -->
+<div class="step" id="step2">
+  <h1>WHO ARE<br>YOU?</h1>
+  <div style="font-size:26px;color:yellow;text-shadow:3px 3px black;margin-top:10px;">SELECT YOUR ACCOUNT TYPE</div>
+  <div class="type-grid">
+    <div class="type-card" id="type-tourist" onclick="selectType('tourist')">
+      <div class="type-icon">🧳</div>
+      <div class="type-name">TOURIST</div>
+      <div class="type-desc">Browse attractions, book tours and leave reviews</div>
+    </div>
+    <div class="type-card" id="type-operator" onclick="selectType('operator')">
+      <div class="type-icon">🚤</div>
+      <div class="type-name">OPERATOR</div>
+      <div class="type-desc">Create and manage tour packages for your attraction</div>
+    </div>
+    <div class="type-card" id="type-admin" onclick="selectType('admin')">
+      <div class="type-icon">🛡️</div>
+      <div class="type-name">ADMIN</div>
+      <div class="type-desc">Full system control over attractions and users</div>
+    </div>
+  </div>
+  <div style="max-width:580px;margin:0 auto;padding:0 20px;">
+    <div class="nav-row">
+      <button class="nav-back" onclick="goStep(1)">&#8592; BACK</button>
+      <button class="nav-next" onclick="goStep(3)">NEXT &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3 — Form -->
+<div class="step" id="step3">
+  <h1 style="font-size:38px;">CREATE<br>YOUR ACCOUNT</h1>
+  <div class="form-card">
+    <div class="err" id="formErr"></div>
+    <div class="form-grid">
+      <div><label class="field-label">FIRST NAME</label><input class="field-input" id="fName" placeholder="John"></div>
+      <div><label class="field-label">LAST NAME</label><input class="field-input" id="lName" placeholder="Doe"></div>
+      <div class="form-full"><label class="field-label">EMAIL</label><input class="field-input" type="email" id="regEmail" placeholder="you@example.com"></div>
+      <div><label class="field-label">PASSWORD</label><input class="field-input" type="password" id="regPass" placeholder="Min 8 chars"></div>
+      <div><label class="field-label">CONFIRM PASSWORD</label><input class="field-input" type="password" id="regConfirm" placeholder="Repeat"></div>
+      <div class="form-full">
+        <label class="field-label">NATIONALITY</label>
+        <select class="field-input" id="regNat">
+          <option value="">Select country...</option>
+          <option>Belize</option><option>United States</option><option>United Kingdom</option>
+          <option>Canada</option><option>Mexico</option><option>Guatemala</option>
+          <option>Jamaica</option><option>Trinidad and Tobago</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-full operator-only" id="opField1"><label class="field-label">COMPANY NAME</label><input class="field-input" id="companyName" placeholder="e.g. Belize Pro Divers"></div>
+      <div class="operator-only" id="opField2"><label class="field-label">CONTACT PHONE</label><input class="field-input" id="phoneNum" placeholder="+501 xxx-xxxx"></div>
+      <div class="operator-only" id="opField3"><label class="field-label">BUSINESS EMAIL</label><input class="field-input" type="email" id="bizEmail" placeholder="contact@company.com"></div>
+    </div>
+    <button class="submit-btn" onclick="submitRegistration()">CREATE ACCOUNT</button>
+    <div class="nav-row" style="margin-top:14px;">
+      <button class="nav-back" onclick="goStep(2)">&#8592; BACK</button>
+      <span></span>
+    </div>
+  </div>
+  <div class="login-link" style="margin-top:16px;">Already have an account? <a href="login.html">Login here</a></div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="successScreen">
+  <img src="../images/toucan.png" alt="" style="width:130px;margin-bottom:14px;" onerror="this.style.display='none'">
+  <h2>YOU'RE ALL SET!</h2>
+  <p>Your account is ready. Start your adventure!</p>
+  <a class="login-now" href="home.html">LET'S GO!</a>
+</div>
+
+<script src="tt-data.js"></script>
+<script>
+var selectedType = '';
+var currentStep = 1;
+
+function goStep(n) {
+    if (n === 3 && !selectedType) { alert('Please select an account type!'); return; }
+    document.getElementById('step' + currentStep).classList.remove('active');
+    document.getElementById('step' + n).classList.add('active');
+    for (var i = 1; i <= 3; i++) {
+        var d = document.getElementById('dot' + i);
+        d.className = 'dot' + (i < n ? ' done' : i === n ? ' active' : '');
+    }
+    currentStep = n;
+    if (n === 3) {
+        var show = selectedType === 'operator';
+        ['opField1','opField2','opField3'].forEach(function(id){
+            document.getElementById(id).classList.toggle('show', show);
+        });
+    }
+}
+
+function selectType(t) {
+    selectedType = t;
+    ['tourist','operator','admin'].forEach(function(x){
+        document.getElementById('type-'+x).classList.toggle('selected', x === t);
+    });
+}
+
+function submitRegistration() {
+    var fName   = document.getElementById('fName').value.trim();
+    var lName   = document.getElementById('lName').value.trim();
+    var email   = document.getElementById('regEmail').value.trim();
+    var pass    = document.getElementById('regPass').value;
+    var confirm = document.getElementById('regConfirm').value;
+    var err     = document.getElementById('formErr');
+
+    if (!fName || !lName || !email || !pass || !confirm) { showErr('All fields are required.'); return; }
+    if (!email.includes('@'))   { showErr('Invalid email address.'); return; }
+    if (pass.length < 8)        { showErr('Password must be at least 8 characters.'); return; }
+    if (pass !== confirm)       { showErr('Passwords do not match.'); return; }
+    if (selectedType === 'operator' && !document.getElementById('companyName').value.trim()) {
+        showErr('Company name is required for operators.'); return;
+    }
+
+    var result = TT.auth.register({ email, password: pass, name: fName + ' ' + lName, role: selectedType });
+    if (!result.ok) { showErr(result.error); return; }
+
+    err.style.display = 'none';
+    document.getElementById('step3').classList.remove('active');
+    document.getElementById('stepDots').style.display = 'none';
+    document.getElementById('successScreen').classList.add('show');
+}
+
+function showErr(msg) {
+    var el = document.getElementById('formErr');
+    el.textContent = msg; el.style.display = 'block';
+}
+
+function handleGoogleRegister(response) {
+    var payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    TT.auth.loginGoogle(payload);
+    // Skip to success
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('stepDots').style.display = 'none';
+    document.getElementById('successScreen').classList.add('show');
+}
+</script>
+</body>
+</html>

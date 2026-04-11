@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tourist Tome - Book Tour</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: #1a4d2e;
+    background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 100% 40px;
+    font-family: 'Luckiest Guy', cursive;
+    color: #ffff00; min-height: 100vh;
+}
+nav {
+    position: sticky; top: 0; z-index: 200;
+    background: #0d3320; border-bottom: 4px solid #fbc02d;
+    display: flex; align-items: center;
+    padding: 0 30px; height: 70px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-right: 28px; }
+.nav-logo img { height: 46px; }
+.nav-logo span { font-size: 1.5rem; color: yellow; text-shadow: 2px 2px black; letter-spacing: 2px; }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a { color: rgba(255,255,0,0.6); text-decoration: none; font-size: 1rem; letter-spacing: 1px; padding: 8px 15px; border-radius: 10px; transition: 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: yellow; background: rgba(255,255,0,0.12); }
+.nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.nav-user { background: rgba(255,255,0,0.12); border: 2px solid #fbc02d; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: yellow; }
+.nav-logout { background: yellow; color: #1a4d2e; border: none; border-radius: 12px; padding: 8px 18px; font-family: 'Luckiest Guy'; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 0 #888800; transition: 0.1s; }
+.nav-logout:hover { background: #eeee00; }
+.nav-logout:active { transform: translateY(3px); }
+
+.page-wrap { max-width: 1100px; margin: 0 auto; padding: 30px 36px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+/* Tour selector bar */
+.tour-selector {
+    background: rgba(0,0,0,0.25); border: 3px solid rgba(251,192,45,0.4);
+    border-radius: 16px; padding: 14px 20px;
+    display: flex; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.tour-selector label { font-size: 18px; color: #cddc39; flex-shrink: 0; }
+.tour-select {
+    flex: 1; min-width: 220px;
+    background: rgba(0,0,0,0.4); border: 3px solid #fbc02d; border-radius: 14px;
+    padding: 10px 16px; color: yellow; font-family: 'Luckiest Guy',serif; font-size: 17px; outline: none;
+}
+.tour-select option { background: #1a4d2e; }
+.tour-info-badge {
+    background: rgba(205,220,57,0.12); border: 2px solid #cddc39;
+    border-radius: 12px; padding: 6px 16px; font-size: 15px; color: #cddc39; white-space: nowrap;
+}
+
+/* Main layout */
+.booking-container {
+    border: 4px solid #fbc02d; border-radius: 20px; padding: 26px;
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: 36px;
+    background: rgba(0,0,0,0.2);
+}
+h2 { font-size: 28px; text-shadow: 2px 2px black; margin-bottom: 18px; }
+
+/* Calendar */
+.calendar-box { border: 3px solid #fbc02d; border-radius: 10px; overflow: hidden; background: rgba(0,0,0,0.3); }
+.cal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(0,0,0,0.4); padding: 11px 16px;
+    border-bottom: 3px solid #fbc02d; font-size: 20px;
+}
+.cal-nav { background: none; border: none; color: #fbc02d; font-size: 22px; cursor: pointer; font-family: 'Luckiest Guy'; padding: 2px 8px; }
+.cal-nav:hover { color: yellow; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+.day-label { background: rgba(251,192,45,0.2); padding: 10px 0; border-bottom: 2px solid #fbc02d; font-size: 15px; }
+.date-cell { padding: 13px 0; border: 0.5px solid rgba(251,192,45,0.15); cursor: pointer; font-size: 15px; transition: 0.15s; }
+.available   { background: #4e6a41; color: #cddc39; }
+.available:hover { background: #5d7a50; }
+.unavailable { background: #7e8c9c; color: #555; cursor: not-allowed; }
+.selected    { background: #fbc02d !important; color: #1a4d2e !important; font-weight: 900; }
+.past-day    { background: rgba(0,0,0,0.15); color: rgba(255,255,255,0.2); cursor: not-allowed; }
+.empty-cell  { background: transparent; cursor: default; }
+.legend { display: flex; gap: 18px; margin-top: 14px; font-size: 14px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 7px; }
+.leg-box { width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); }
+
+/* Right panel */
+.details-panel { display: flex; flex-direction: column; gap: 20px; }
+.field-label { display: block; font-size: 17px; color: #cddc39; margin-bottom: 8px; }
+.custom-select {
+    width: 100%; padding: 12px 16px;
+    background: transparent; border: 3px solid #fbc02d; border-radius: 15px;
+    color: yellow; font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
+}
+.custom-select option { background: #1a4d2e; }
+.price-card {
+    border: 3px solid #fbc02d; border-radius: 15px;
+    padding: 16px 20px; text-align: center; background: rgba(0,0,0,0.2);
+}
+.price-season { font-size: 14px; color: rgba(255,255,0,0.5); margin-bottom: 4px; letter-spacing: 1px; }
+.price-main   { font-size: 30px; text-shadow: 2px 2px black; }
+.price-note   { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+.book-btn {
+    background: #cddc39; color: #1a4d2e; padding: 16px; border: none;
+    border-radius: 15px; font-family: 'Luckiest Guy'; font-size: 28px;
+    cursor: pointer; box-shadow: 0 6px 0 #689f38; transition: 0.1s; width: 100%;
+}
+.book-btn:hover  { background: #ddef48; }
+.book-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #689f38; }
+.book-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.25); box-shadow: none; cursor: not-allowed; transform: none; }
+.payment-box { border: 2px solid #4e6a41; border-radius: 15px; padding: 14px; text-align: center; }
+.pay-label { font-size: 14px; color: #cddc39; margin-bottom: 10px; letter-spacing: 1px; }
+.pay-methods { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.pay-opt {
+    background: rgba(0,0,0,0.3); border: 2px solid rgba(251,192,45,0.3);
+    border-radius: 10px; padding: 8px 18px; cursor: pointer;
+    font-size: 16px; font-family: 'Luckiest Guy'; transition: 0.2s;
+}
+.pay-opt:hover, .pay-opt.selected { border-color: #fbc02d; background: rgba(251,192,45,0.12); }
+
+/* Confirmation overlay */
+.confirm-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,40,20,0.97); z-index: 400;
+    flex-direction: column; align-items: center; justify-content: center; text-align: center;
+}
+.confirm-overlay.show { display: flex; animation: fadeUp 0.3s ease; }
+.confirm-box { padding: 20px; }
+.confirm-box h2 { font-size: 58px; text-shadow: 5px 5px black; margin-bottom: 12px; }
+.confirm-box p  { font-size: 18px; color: rgba(255,255,255,0.55); margin-bottom: 8px; }
+.confirm-detail { background: rgba(255,255,0,0.08); border: 2px solid rgba(255,255,0,0.2); border-radius: 16px; padding: 16px 28px; margin: 16px auto; display: inline-block; font-size: 17px; line-height: 1.9; text-align: left; }
+.confirm-btn { background: #cddc39; color: #1a4d2e; border: none; border-radius: 16px; padding: 14px 40px; font-family: 'Luckiest Guy'; font-size: 22px; cursor: pointer; box-shadow: 0 5px 0 #689f38; margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="home.html">
+    <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+    <span>TOURIST TOME</span>
+  </a>
+  <div class="nav-links">
+    <a href="home.html">HOME</a>
+    <a href="tours.html">ATTRACTION</a>
+    <a href="bookings.html" class="active">BOOK TOUR</a>
+    <a href="mybookings.html">MYBOOKING</a>
+    <a href="Review.html">REVIEWS</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser"></span>
+    <button class="nav-logout" id="navLogout">LOGOUT</button>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <a href="home.html" style="font-size:40px;color:orange;text-decoration:none;display:inline-block;margin-bottom:10px;transition:0.2s;" onmouseover="this.style.transform='translateX(-8px)'" onmouseout="this.style.transform=''">&#8592;</a>
+  <h1 style="font-size:55px;text-shadow:4px 4px black;margin-bottom:20px;">BOOKING</h1>
+
+  <!-- Tour selector -->
+  <div class="tour-selector">
+    <label>SELECT TOUR:</label>
+    <select class="tour-select" id="tourSelect" onchange="onTourChange()"></select>
+    <div class="tour-info-badge" id="tourBadge">Choose a tour above</div>
+  </div>
+
+  <h2>Select your date:</h2>
+  <div class="booking-container">
+    <div>
+      <div class="calendar-box">
+        <div class="cal-header">
+          <button class="cal-nav" onclick="changeMonth(-1)">&#9664;</button>
+          <span id="calLabel" style="font-size:18px;"></span>
+          <button class="cal-nav" onclick="changeMonth(1)">&#9654;</button>
+        </div>
+        <div class="calendar-grid" id="calGrid"></div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="leg-box" style="background:#4e6a41;"></div> Available</div>
+        <div class="legend-item"><div class="leg-box" style="background:#7e8c9c;"></div> Unavailable</div>
+        <div class="legend-item"><div class="leg-box" style="background:#fbc02d;"></div> Selected</div>
+      </div>
+    </div>
+
+    <div class="details-panel">
+      <div>
+        <label class="field-label">NUMBER OF PERSONS</label>
+        <select class="custom-select" id="personCount" onchange="updatePrice()">
+          <option value="1">1 person</option>
+          <option value="2">2 persons</option>
+          <option value="3">3 persons</option>
+          <option value="4">4 persons</option>
+          <option value="5">5 persons</option>
+        </select>
+      </div>
+
+      <div class="price-card">
+        <div class="price-season" id="priceSeason">SELECT A DATE</div>
+        <div class="price-main" id="priceMain">— </div>
+        <div class="price-note" id="priceNote">Per person price will adjust by season</div>
+      </div>
+
+      <div class="payment-box">
+        <div class="pay-label">PAYMENT METHOD</div>
+        <div class="pay-methods" id="payMethods">
+          <div class="pay-opt selected" data-method="Visa"   onclick="selectPay(this)">VISA</div>
+          <div class="pay-opt" data-method="Mastercard"      onclick="selectPay(this)">MC</div>
+          <div class="pay-opt" data-method="Amex"            onclick="selectPay(this)">AMEX</div>
+          <div class="pay-opt" data-method="PayPal"          onclick="selectPay(this)">PAYPAL</div>
+        </div>
+      </div>
+
+      <button class="book-btn" id="bookBtn" onclick="confirmBook()" disabled>SELECT A DATE FIRST</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation overlay -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <img src="../images/toucan.png" alt="" style="width:120px;margin-bottom:16px;" onerror="this.style.display='none'">
+    <h2>BOOKING<br>CONFIRMED!</h2>
+    <div class="confirm-detail" id="confirmDetail"></div>
+    <p style="font-size:15px;color:rgba(255,255,0,0.4);">A confirmation will appear in My Bookings.</p>
+    <button class="confirm-btn" onclick="location.href='mybookings.html'">VIEW MY BOOKINGS</button>
+  </div>
+</div>
+
+<script src="tt-data.js"></script>
+<script>
+TT.auth.require();
+
+var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var UNAVAIL_DAYS = [4, 11, 18, 25]; // simulated unavailable days
+var curY, curM, selDate = null, selPayment = 'Visa';
+var today = new Date();
+
+// ── Populate tour dropdown ─────────────────────────────────
+function initTourSelect() {
+    var sel = document.getElementById('tourSelect');
+    // Check if a tourID was passed in URL
+    var params = new URLSearchParams(location.search);
+    var urlTour = parseInt(params.get('tourID')) || null;
+
+    sel.innerHTML = '<option value="">-- Pick a tour --</option>' +
+        TT.TOURS.map(function(t) {
+            return '<option value="' + t.id + '"' + (t.id === urlTour ? ' selected' : '') + '>' +
+                t.name + ' ($' + t.price + ' / person)</option>';
+        }).join('');
+
+    onTourChange();
+}
+
+function onTourChange() {
+    var id = parseInt(document.getElementById('tourSelect').value);
+    var tour = TT.TOURS.find(function(t){ return t.id === id; });
+    var badge = document.getElementById('tourBadge');
+    if (tour) {
+        badge.textContent = tour.operator + ' · ' + tour.duration + ' · Max ' + tour.cap;
+    } else {
+        badge.textContent = 'Choose a tour above';
+    }
+    updatePrice();
+}
+
+// ── Calendar ──────────────────────────────────────────────
+function initCal() {
+    curY = today.getFullYear();
+    curM = today.getMonth();
+    renderCal();
+}
+
+function renderCal() {
+    document.getElementById('calLabel').textContent = MONTHS[curM] + ' ' + curY;
+    var fd  = new Date(curY, curM, 1).getDay();
+    var dim = new Date(curY, curM + 1, 0).getDate();
+    var now = new Date(); now.setHours(0,0,0,0);
+
+    var html = ['S','M','T','W','T','F','S'].map(function(d){ return '<div class="day-label">'+d+'</div>'; }).join('');
+    for (var i = 0; i < fd; i++) html += '<div class="date-cell empty-cell"></div>';
+    for (var d = 1; d <= dim; d++) {
+        var dt = new Date(curY, curM, d);
+        var dateStr = curY + '-' + String(curM+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+        var isPast   = dt < now;
+        var isUnavail= UNAVAIL_DAYS.includes(d);
+        var isSel    = selDate === dateStr;
+        var cls = isSel ? 'date-cell selected' : isPast ? 'date-cell past-day' : isUnavail ? 'date-cell unavailable' : 'date-cell available';
+        var click = (!isPast && !isUnavail) ? ' onclick="pickDay(\'' + dateStr + '\')"' : '';
+        html += '<div class="' + cls + '"' + click + '>' + d + '</div>';
+    }
+    document.getElementById('calGrid').innerHTML = html;
+}
+
+function pickDay(dateStr) {
+    selDate = dateStr;
+    renderCal();
+    updatePrice();
+    var btn = document.getElementById('bookBtn');
+    var tourID = parseInt(document.getElementById('tourSelect').value);
+    if (tourID) {
+        btn.textContent = 'BOOK NOW';
+        btn.disabled = false;
+    }
+}
+
+function changeMonth(dir) {
+    curM += dir;
+    if (curM > 11) { curM = 0; curY++; }
+    if (curM < 0)  { curM = 11; curY--; }
+    selDate = null;
+    document.getElementById('bookBtn').textContent = 'SELECT A DATE FIRST';
+    document.getElementById('bookBtn').disabled = true;
+    renderCal();
+    updatePrice();
+}
+
+// ── Price calc ────────────────────────────────────────────
+function updatePrice() {
+    var tourID = parseInt(document.getElementById('tourSelect').value);
+    var tour   = TT.TOURS.find(function(t){ return t.id === tourID; });
+    var count  = parseInt(document.getElementById('personCount').value);
+
+    if (!tour || !selDate) {
+        document.getElementById('priceSeason').textContent = 'SELECT A DATE';
+        document.getElementById('priceMain').textContent   = '—';
+        document.getElementById('priceNote').textContent   = 'Price will show once you pick a tour + date';
+        return;
+    }
+
+    var s     = TT.getMultiplier(selDate);
+    var total = (tour.price * count * s.mult).toFixed(2);
+    var per   = (tour.price * s.mult).toFixed(2);
+    document.getElementById('priceSeason').textContent = s.label.toUpperCase() + ' SEASON' + (s.mult !== 1 ? ' (' + (s.mult > 1 ? '+' : '') + Math.round((s.mult-1)*100) + '%)' : '');
+    document.getElementById('priceMain').textContent   = 'TOTAL: $' + total;
+    document.getElementById('priceNote').textContent   = '$' + per + ' × ' + count + (count > 1 ? ' persons' : ' person');
+}
+
+// ── Payment method ────────────────────────────────────────
+function selectPay(el) {
+    document.querySelectorAll('.pay-opt').forEach(function(o){ o.classList.remove('selected'); });
+    el.classList.add('selected');
+    selPayment = el.dataset.method;
+}
+
+// ── Confirm booking ───────────────────────────────────────
+function confirmBook() {
+    var tourID = parseInt(document.getElementById('tourSelect').value);
+    var count  = parseInt(document.getElementById('personCount').value);
+    if (!tourID || !selDate) { alert('Please select a tour and a date.'); return; }
+
+    var result = TT.bookings.create({ tourID, tourDate: selDate, personCount: count, paymentMethod: selPayment });
+    if (!result.ok) { alert(result.error); return; }
+
+    var b = result.booking;
+    document.getElementById('confirmDetail').innerHTML =
+        '<strong>' + b.tourName + '</strong><br>' +
+        'Date: ' + new Date(b.tourDate).toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'long',day:'numeric'}) + '<br>' +
+        'Persons: ' + b.personCount + '<br>' +
+        'Payment: ' + b.paymentMethod + '<br>' +
+        'Total: <span style="color:#cddc39;font-size:22px;">$' + b.total + '</span>';
+    document.getElementById('confirmOverlay').classList.add('show');
+}
+
+initTourSelect();
+initCal();
+</script>
+</body>
+</html>
