@@ -6,6 +6,15 @@
 <title>Tourist Tome - Book Tour</title>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
 <style>
+
+  .tour-selector label,
+  .tour-select {
+    font-family: 'Luckiest Guy', cursive;
+  }
+
+  .tour-info-badge {
+    font-family: 'Luckiest Guy', cursive;
+  }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     background-color: #1a4d2e;
@@ -158,7 +167,7 @@ h2 { font-size: 28px; text-shadow: 2px 2px black; margin-bottom: 18px; }
   <!-- Tour selector -->
   <div class="tour-selector">
     <label>SELECT TOUR:</label>
-    <select class="tour-select" id="tourSelect" onchange="onTourChange()"></select>
+    <select class="tour-select" id="tourSelect"  onchange="onTourChange()"></select>
     <div class="tour-info-badge" id="tourBadge">Choose a tour above</div>
   </div>
 
