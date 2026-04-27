@@ -216,7 +216,7 @@ nav {
       <div id="tourArea"></div>
 
       <div class="action-buttons">
-        <button class="btn-white" onclick="location.href='tours.html'">MORE TOURS</button>
+        <button class="btn-white" onclick="location.href='tours.html?attrID=' + attr.id">MORE TOURS</button>
         <button class="btn-book"  id="bookBtn" onclick="bookNow()">BOOK NOW</button>
       </div>
 
@@ -361,7 +361,7 @@ function renderReviews() {
         '</div>';
     }).join('') +
     (allRevs.length > 4 ?
-        '<div class="rev-more" onclick="location.href=\'Review.html\'">See all ' + allRevs.length + ' reviews &#8594;</div>' : '');
+        '<div class="rev-more" onclick="location.href=\'Review.html?tourID=' + (tours[curTour] ? tours[curTour].id : '') + '\'">See all ' + allRevs.length + ' reviews &#8594;</div>' : '');
 }
 
 renderTourArea();

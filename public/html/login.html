@@ -183,7 +183,7 @@ h1 {
          your real Client ID from console.cloud.google.com
     ──────────────────────────────────────────────────────── -->
     <div id="g_id_onload"
-         data-client_id="YOUR_GOOGLE_CLIENT_ID_HERE"
+         data-client_id="53379048140-sft8no01d3p8cacouia32jmevk7msssf.apps.googleusercontent.com"
          data-callback="handleGoogleLogin"
          data-auto_prompt="false">
     </div>
@@ -219,21 +219,21 @@ h1 {
 function handleLogin() {
     const email = document.getElementById('emailInput').value.trim();
     const pass  = document.getElementById('passwordInput').value;
-    const err   = document.getElementById('errorMsg');
 
     if (!email || !pass) { showErr('Enter your email and password.'); return; }
 
-    const user = TT.auth.login(email, pass);
-    if (!user) { showErr('Wrong email or password — try a demo account!'); return; }
+    const result = TT.auth.login(email, pass);
+    if (!result.ok) { showErr(result.error || 'Wrong email or password.'); return; }
 
-    err.style.display = 'none';
-    redirect(user.role);
+    document.getElementById('errorMsg').style.display = 'none';
+    redirect(result.user.role);
 }
 
 function handleGoogleLogin(response) {
     const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-    const user = TT.auth.loginGoogle(payload);
-    redirect(user.role);
+    const result = TT.auth.loginGoogle({ email: payload.email, name: payload.name });
+    if (!result.ok) { showErr(result.error || 'Google sign-in failed.'); return; }
+    redirect(result.user.role);
 }
 
 function redirect(role) {

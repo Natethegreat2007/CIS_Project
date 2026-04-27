@@ -6,7 +6,6 @@
 <title>Tourist Tome - Manage Tour</title>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
 <style>
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     background-color: #1a4d2e;
@@ -16,8 +15,6 @@ body {
     color: #ffff00;
     min-height: 100vh;
 }
-
-
 nav {
     position: sticky; top: 0; z-index: 200;
     background: #0d3320;
@@ -26,89 +23,34 @@ nav {
     padding: 0 30px; height: 70px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
-.nav-logo {
-    display: flex; align-items: center; gap: 12px;
-    text-decoration: none; margin-right: 28px; flex-shrink: 0;
-}
+.nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-right: 28px; flex-shrink: 0; }
 .nav-logo img { height: 46px; width: auto; }
-.nav-logo span {
-    font-family: 'Luckiest Guy';
-    font-size: 1.55rem; color: yellow;
-    text-shadow: 2px 2px black; letter-spacing: 2px;
-}
+.nav-logo span { font-size: 1.55rem; color: yellow; text-shadow: 2px 2px black; letter-spacing: 2px; }
 .nav-links { display: flex; align-items: center; gap: 4px; }
-.nav-links a {
-    color: rgba(255,255,0,0.6);
-    text-decoration: none;
-    font-family: 'Luckiest Guy';
-    font-size: 1rem; letter-spacing: 1px;
-    padding: 8px 15px; border-radius: 10px;
-    transition: 0.2s;
-}
-.nav-links a:hover, .nav-links a.active {
-    color: yellow; background: rgba(255,255,0,0.12);
-}
+.nav-links a { color: rgba(255,255,0,0.6); text-decoration: none; font-size: 1rem; letter-spacing: 1px; padding: 8px 15px; border-radius: 10px; transition: 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: yellow; background: rgba(255,255,0,0.12); }
 .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-.nav-search {
-    background: white; border-radius: 50px;
-    border: 3px solid black; padding: 5px 16px;
-    display: flex; align-items: center; gap: 6px;
-}
-.nav-search input {
-    border: none; outline: none;
-    font-family: 'Luckiest Guy'; font-size: 0.85rem;
-    width: 145px; color: #1a4d2e; background: transparent;
-}
-.nav-user {
-    background: rgba(255,255,0,0.12);
-    border: 2px solid #fbc02d; border-radius: 20px;
-    padding: 4px 14px; font-size: 0.8rem;
-    color: yellow; letter-spacing: 1px;
-}
-.nav-logout {
-    background: yellow; color: #1a4d2e;
-    border: none; border-radius: 12px;
-    padding: 8px 18px; font-family: 'Luckiest Guy';
-    font-size: 0.95rem; letter-spacing: 1px;
-    cursor: pointer; box-shadow: 0 4px 0 #888800;
-    transition: 0.1s;
-}
+.nav-user { background: rgba(255,255,0,0.12); border: 2px solid #fbc02d; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: yellow; letter-spacing: 1px; }
+.nav-logout { background: yellow; color: #1a4d2e; border: none; border-radius: 12px; padding: 8px 18px; font-family: 'Luckiest Guy'; font-size: 0.95rem; letter-spacing: 1px; cursor: pointer; box-shadow: 0 4px 0 #888800; transition: 0.1s; }
 .nav-logout:hover { background: #eeee00; }
 .nav-logout:active { transform: translateY(3px); box-shadow: 0 1px 0 #888800; }
-
 .page-wrap { max-width: 1280px; margin: 0 auto; padding: 36px 40px; animation: fadeUp 0.3s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
-.page-title { font-size: 60px; text-shadow: 4px 4px black; margin-bottom: 30px; letter-spacing: 2px; }
-.section-title { font-size: 36px; text-shadow: 3px 3px black; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,0,0.2); padding-bottom: 8px; }
 .back-nav { font-size: 45px; color: orange; cursor: pointer; display: inline-block; margin-bottom: 12px; text-decoration: none; transition: transform 0.2s; }
 .back-nav:hover { transform: translateX(-8px); }
-.input-field {
-    width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d;
-    border-radius: 20px; padding: 12px 18px; color: #ffff00;
-    font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
-    box-sizing: border-box; transition: border-color 0.2s;
-}
-.input-field:focus { border-color: yellow; }
-.input-field::placeholder { color: rgba(255,255,0,0.4); }
-.input-field option { background: #1a4d2e; }
-.ybtn {
-    background: #cddc39; color: #1a4d2e; border: none;
-    border-radius: 14px; padding: 13px 30px;
-    font-family: 'Luckiest Guy'; font-size: 20px; letter-spacing: 1px;
-    cursor: pointer; box-shadow: 0 5px 0 #689f38; transition: 0.1s;
-}
-.ybtn:hover { background: #ddef48; }
-.ybtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #689f38; }
 .alert { padding: 12px 18px; border-radius: 14px; font-size: 17px; margin-bottom: 16px; display: none; }
 .alert-ok  { background: rgba(205,220,57,0.12); border: 2px solid #cddc39; color: #cddc39; }
 .alert-err { background: rgba(255,82,82,0.12);  border: 2px solid #ff5252;  color: #ff5252; }
-
 .page-header { font-size: 50px; text-shadow: 4px 4px black; margin: 0 0 8px 0; }
 .sub-header { font-size: 30px; border-bottom: 2px solid yellow; display: inline-block; margin-bottom: 36px; padding-bottom: 5px; }
 .manage-container { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 40px; align-items: start; }
 .input-group { margin-bottom: 28px; }
 .input-group label { display: block; font-size: 22px; margin-bottom: 10px; }
-.input-field { width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d; border-radius: 20px; padding: 12px 20px; color: yellow; font-family: 'Luckiest Guy'; font-size: 20px; outline: none; box-sizing: border-box; transition: border-color 0.2s; }
+.input-field {
+    width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d;
+    border-radius: 20px; padding: 12px 20px; color: yellow; font-family: 'Luckiest Guy';
+    font-size: 20px; outline: none; box-sizing: border-box; transition: border-color 0.2s;
+}
 .input-field:focus { border-color: yellow; }
 .input-field::placeholder { color: rgba(255,255,0,0.4); }
 .input-field option { background: #1a4d2e; }
@@ -120,9 +62,16 @@ nav {
 .camera-icon img { width: 48px; height: 48px; object-fit: contain; }
 #imagePreview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
 .action-row { display: flex; gap: 16px; margin-top: 10px; }
+.save-btn { background: #cddc39; color: #1a4d2e; border: none; border-radius: 14px; padding: 13px 30px; font-family: 'Luckiest Guy'; font-size: 20px; letter-spacing: 1px; cursor: pointer; box-shadow: 0 5px 0 #689f38; transition: 0.1s; }
+.save-btn:hover { background: #ddef48; }
+.save-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #689f38; }
 .cancel-btn { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); border: 2px solid rgba(255,255,255,0.2); border-radius: 14px; padding: 13px 28px; font-family: 'Luckiest Guy'; font-size: 20px; cursor: pointer; transition: 0.15s; }
 .cancel-btn:hover { background: rgba(255,255,255,0.18); }
-
+.existing-title { font-size: 28px; text-shadow: 2px 2px black; margin: 40px 0 18px; }
+.tour-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.tour-chip { background: rgba(0,0,0,0.25); border: 2px solid rgba(251,192,45,0.25); border-radius: 18px; padding: 16px; }
+.tour-chip-name { color: yellow; font-size: 20px; margin-bottom: 6px; }
+.tour-chip-meta { color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -134,14 +83,15 @@ nav {
   <div class="nav-links"><a href="dashboard.html">DASHBOARD</a><a href="admindashboard.html">ATTRACTIONS</a><a href="managetour.html" class="active">MANAGE TOUR</a></div>
   <div class="nav-right">
     <span class="nav-user" id="navUser"></span>
-    <button class="nav-logout" onclick="window.location.href='login.html'">LOGOUT</button>
+    <button class="nav-logout" id="navLogout">LOGOUT</button>
   </div>
 </nav>
 <div class="page-wrap">
   <a class="back-nav" href="dashboard.html">&#8592;</a>
   <h1 class="page-header">MANAGE TOUR</h1>
-  <h2 class="sub-header">CREATE/EDIT TOUR</h2>
+  <h2 class="sub-header">CREATE TOUR</h2>
   <div id="saveAlert" class="alert alert-ok">Tour saved successfully!</div>
+  <div id="errorAlert" class="alert alert-err"></div>
 
   <div class="manage-container">
     <div>
@@ -150,15 +100,7 @@ nav {
       <div class="input-group"><label>Location:</label><input type="text" class="input-field" id="tourLoc" placeholder="Enter.."></div>
       <div class="input-group">
         <label>Linked Attraction:</label>
-        <select class="input-field" id="tourAttr">
-          <option value="">Select attraction...</option>
-          <option>The Great Blue Hole</option>
-          <option>Xunantunich</option>
-          <option>Belize Barrier Reef</option>
-          <option>Caracol</option>
-          <option>Cockscomb Basin</option>
-          <option>Lamanai</option>
-        </select>
+        <select class="input-field" id="tourAttr"></select>
       </div>
     </div>
     <div>
@@ -170,7 +112,7 @@ nav {
       <div class="upload-title">Upload Images</div>
       <div class="upload-box" onclick="document.getElementById('fileInput').click()">
         <div class="camera-icon">
-          <img src="camera-icon.png" alt="camera" onerror="this.outerHTML='<span style=font-size:2rem;color:yellow;>&#128247;</span>'">
+          <img src="camera-icon.png" alt="camera" onerror="this.outerHTML='<span style=&quot;font-size:2rem;color:yellow;&quot;>&#128247;</span>'">
         </div>
         <img id="imagePreview" alt="Preview">
         <input type="file" id="fileInput" hidden accept="image/*">
@@ -179,31 +121,92 @@ nav {
   </div>
 
   <div class="action-row" style="margin-top:24px;">
-    <button class="ybtn" onclick="saveTour()">SAVE TOUR</button>
+    <button class="save-btn" onclick="saveTour()">SAVE TOUR</button>
     <button class="cancel-btn" onclick="resetForm()">CANCEL</button>
   </div>
+
+  <div class="existing-title">YOUR TOURS</div>
+  <div class="tour-list" id="existingTours"></div>
 </div>
+
+<script src="tt-data.js"></script>
 <script>
+TT.auth.require(['operator', 'admin']);
+
+var imageData = '';
+
 document.getElementById('fileInput').addEventListener('change', function() {
   var f = this.files[0];
   if (!f) return;
   var r = new FileReader();
   r.onload = function(e) {
+    imageData = e.target.result;
     var prev = document.getElementById('imagePreview');
-    prev.src = e.target.result;
+    prev.src = imageData;
     prev.style.display = 'block';
     document.querySelector('.camera-icon').style.display = 'none';
   };
   r.readAsDataURL(f);
 });
 
+function showAlert(id, message) {
+  var el = document.getElementById(id);
+  el.textContent = message;
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display = 'none'; }, 3000);
+}
+
+function populateAttractions() {
+  var select = document.getElementById('tourAttr');
+  select.innerHTML = '<option value="">Select attraction...</option>' +
+    TT.ATTRACTIONS.map(function(attraction) {
+      return '<option value="' + attraction.id + '">' + attraction.name + '</option>';
+    }).join('');
+}
+
+function renderExistingTours() {
+  var tours = TT.tours.mine();
+  var wrap = document.getElementById('existingTours');
+
+  if (!tours.length) {
+    wrap.innerHTML = '<div class="tour-chip"><div class="tour-chip-name">No tours yet</div><div class="tour-chip-meta">Create your first tour with the form above.</div></div>';
+    return;
+  }
+
+  wrap.innerHTML = tours.map(function(tour) {
+    return '<div class="tour-chip">' +
+      '<div class="tour-chip-name">' + tour.name + '</div>' +
+      '<div class="tour-chip-meta">' + tour.location + '<br>' + tour.duration + ' · Max ' + tour.cap + '<br>$' + tour.price + '</div>' +
+      '</div>';
+  }).join('');
+}
+
 function saveTour() {
-  var n = document.getElementById('tourName').value.trim();
-  var a = document.getElementById('tourAttr').value;
-  if (!n || !a) { alert('Tour name and linked attraction are required.'); return; }
-  var al = document.getElementById('saveAlert');
-  al.style.display = 'block';
-  setTimeout(function(){ al.style.display = 'none'; }, 3000);
+  var payload = {
+    attrID: parseInt(document.getElementById('tourAttr').value),
+    title: document.getElementById('tourName').value.trim(),
+    description: document.getElementById('tourDesc').value.trim(),
+    durationHours: parseInt(document.getElementById('tourDuration').value),
+    price: parseFloat(document.getElementById('tourPrice').value),
+    maxCap: parseInt(document.getElementById('tourCap').value),
+    location: document.getElementById('tourLoc').value.trim(),
+    image: imageData || '/images/tour1.jpg'
+  };
+
+  if (!payload.attrID || !payload.title || !payload.description || !payload.durationHours || !payload.price || !payload.maxCap) {
+    showAlert('errorAlert', 'Please complete every field before saving.');
+    return;
+  }
+
+  var result = TT.tours.save(payload);
+  if (!result.ok) {
+    showAlert('errorAlert', result.error || 'Unable to save tour.');
+    return;
+  }
+
+  showAlert('saveAlert', 'Tour saved successfully!');
+  resetForm();
+  renderExistingTours();
 }
 
 function resetForm() {
@@ -213,14 +216,12 @@ function resetForm() {
   document.getElementById('tourAttr').value = '';
   document.getElementById('imagePreview').style.display = 'none';
   document.querySelector('.camera-icon').style.display = 'flex';
+  document.getElementById('fileInput').value = '';
+  imageData = '';
 }
-</script>
 
-<script>
-(function(){
-    var u = sessionStorage.getItem('tt_user');
-    if (u) { var el = document.getElementById('navUser'); if (el) el.textContent = u.toUpperCase(); }
-})();
+populateAttractions();
+renderExistingTours();
 </script>
 </body>
 </html>

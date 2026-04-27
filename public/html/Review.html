@@ -163,7 +163,8 @@ textarea::placeholder { color: rgba(26,77,46,0.4); }
 TT.auth.require();
 
 var selRating = 0;
-var selTourID = null;
+var params = new URLSearchParams(location.search);
+var selTourID = parseInt(params.get('tourID')) || null;
 var session   = TT.auth.session();
 
 // Set reviewer name
@@ -186,6 +187,14 @@ function initPills() {
         renderReviews();
         renderAvg();
     });
+
+    if (selTourID) {
+        var pill = row.querySelector('[data-tid="' + selTourID + '"]');
+        if (pill) {
+            row.querySelectorAll('.tf-pill').forEach(function(b){ b.classList.remove('active'); });
+            pill.classList.add('active');
+        }
+    }
 }
 
 // ── Star rating input ─────────────────────────────────────

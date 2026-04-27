@@ -233,7 +233,7 @@ function renderAttractions() {
     }
 
     grid.innerHTML = list.map(function(a) {
-        return '<a class="attr-card" href=' + a.id + '"description.html?id=">' +
+        return '<a class="attr-card" href="description.html?id=' + a.id + '">' +
             '<div class="attr-thumb">' +
                 '<img src="' + a.img + '" alt="' + a.name + '" onerror="this.style.opacity=0">' +
                 '<div class="attr-fallback" style="background:' + a.color + '">' + a.name + '</div>' +
@@ -255,7 +255,7 @@ function renderAttractions() {
 function renderTours() {
     var strip = document.getElementById('tourStrip');
     strip.innerHTML = TT.TOURS.map(function(t) {
-        return '<a class="tour-pill" href=' + t.id + '"bookings.html?tourID=">' +
+        return '<a class="tour-pill" href="bookings.html?tourID=' + t.id + '">' +
             '<div class="tour-circle" style="background:' + t.color + '">' +
                 '<img src="' + t.img + '" alt="' + t.name + '" onerror="this.style.opacity=0">' +
                 '<div class="tour-circle-fallback">' + t.name.split(' ').slice(0,2).join('<br>') + '</div>' +
