@@ -1,67 +1,69 @@
 const router = require('express').Router();
-const { readData, updateData } = require('../db');
+const { pool } = require('../db');
+const { listReviews, mapReview } = require('../lib/catalog');
 const { requireAuth } = require('../middleware/auth');
-const { getTour, presentReview } = require('../utils/domain');
 
-router.get('/', async (req, res, next) => {
-  try {
-    const tourId = req.query.tourID ? Number(req.query.tourID) : null;
-    const data = await readData();
-    const reviews = data.reviews
-      .filter((entry) => !tourId || entry.tourID === tourId)
-      .map((entry) => presentReview(data, entry))
-      .sort((left, right) => new Date(right.date) - new Date(left.date));
+router.get('/', async (req, res) => {
+  const reviews = await listReviews(pool, {
+    tourId: req.query.tourID ? Number(req.query.tourID) : null,
+    attractionId: req.query.attractionID ? Number(req.query.attractionID) : null,
+  });
 
-    return res.json(reviews);
-  } catch (error) {
-    return next(error);
-  }
+  res.json({ reviews });
 });
 
-router.post('/', requireAuth, async (req, res, next) => {
+router.post('/', requireAuth, async (req, res) => {
+  const { tourID, rating, comment } = req.body;
+  const score = Number(rating);
+
+  if (!tourID || !score) {
+    return res.status(400).json({ error: 'Tour and rating are required.' });
+  }
+
+  if (score < 1 || score > 5) {
+    return res.status(400).json({ error: 'Ratings must be between 1 and 5.' });
+  }
+
   try {
-    const { tourID, rating, comment } = req.body;
-    const numericTourId = Number(tourID);
-    const numericRating = Number(rating);
-    const data = await readData();
+    const [result] = await pool.query(
+      `
+        INSERT INTO Review (userID, tourID, rating, comment)
+        VALUES (?, ?, ?, ?)
+      `,
+      [req.user.id, Number(tourID), score, comment ? comment.trim() : '']
+    );
 
-    if (!numericTourId || !numericRating) {
-      return res.status(400).json({ error: 'Tour and rating are required.' });
-    }
+    const [rows] = await pool.query(
+      `
+        SELECT
+          r.reviewID AS id,
+          r.tourID AS tourID,
+          r.userID AS userID,
+          CONCAT(u.fName, ' ', u.lName) AS userName,
+          r.rating AS rating,
+          r.comment AS comment,
+          r.createdAt AS date,
+          t.title AS tourName
+        FROM Review r
+        INNER JOIN Users u ON u.userID = r.userID
+        INNER JOIN Tour t ON t.tourID = r.tourID
+        WHERE r.reviewID = ?
+        LIMIT 1
+      `,
+      [result.insertId]
+    );
 
-    if (!getTour(data, numericTourId)) {
-      return res.status(404).json({ error: 'Tour not found.' });
-    }
-
-    if (numericRating < 1 || numericRating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5.' });
-    }
-
-    const duplicate = data.reviews.find((entry) => entry.tourID === numericTourId && entry.userID === req.user.id);
-    if (duplicate) {
+    return res.status(201).json({ review: mapReview(rows[0]) });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ error: 'You already reviewed this tour.' });
     }
 
-    const result = await updateData(async (mutableData, helpers) => {
-      const review = {
-        id: helpers.nextId(mutableData.reviews),
-        tourID: numericTourId,
-        userID: req.user.id,
-        userName: `${req.user.firstName} ${req.user.lastName}`.trim(),
-        rating: numericRating,
-        comment: String(comment || '').trim(),
-        createdAt: helpers.nowIso(),
-      };
+    if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+      return res.status(404).json({ error: 'That tour no longer exists.' });
+    }
 
-      mutableData.reviews.unshift(review);
-      return { reviewId: review.id };
-    });
-
-    const refreshed = await readData();
-    const review = refreshed.reviews.find((entry) => entry.id === result.reviewId);
-    return res.status(201).json(presentReview(refreshed, review));
-  } catch (error) {
-    return next(error);
+    throw error;
   }
 });
 

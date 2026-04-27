@@ -1,139 +1,368 @@
-/* ============================================================
-   Tourist Tome shared API + state layer
-   ============================================================ */
-
 const TT = (function () {
   const API_BASE = '/api';
   const SESSION_KEY = 'tt_session';
   const TOKEN_KEY = 'tt_token';
-  const LEGACY_USER_KEY = 'tt_user';
-  const LEGACY_ROLE_KEY = 'tt_role';
 
   const ATTRACTIONS = [];
   const TOURS = [];
-  const REVIEWS = [];
 
-  function clone(value) {
-    return JSON.parse(JSON.stringify(value));
+  function replaceArray(target, items) {
+    target.splice(0, target.length, ...items);
+    return target;
   }
 
-  function parseJson(text) {
+  function readSession() {
     try {
-      return text ? JSON.parse(text) : null;
-    } catch (_error) {
+      return JSON.parse(sessionStorage.getItem(SESSION_KEY));
+    } catch (error) {
       return null;
     }
   }
 
-  function request(method, path, body) {
-    const xhr = new XMLHttpRequest();
-    xhr.open(method, API_BASE + path, false);
-    xhr.setRequestHeader('Accept', 'application/json');
-
-    const token = sessionStorage.getItem(TOKEN_KEY);
-    if (token) {
-      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-    }
-
-    if (body !== undefined && body !== null) {
-      xhr.setRequestHeader('Content-Type', 'application/json');
-    }
-
-    try {
-      xhr.send(body !== undefined && body !== null ? JSON.stringify(body) : null);
-    } catch (error) {
-      return {
-        ok: false,
-        status: 0,
-        error: 'Unable to reach the Tourist Tome server. Make sure the app is running.',
-      };
-    }
-
-    const data = parseJson(xhr.responseText);
-    const ok = xhr.status >= 200 && xhr.status < 300;
-
-    if (!ok && xhr.status === 401) {
-      clearSession();
-    }
-
-    return {
-      ok: ok,
-      status: xhr.status,
-      data: data,
-      error: data && (data.error || data.message) ? (data.error || data.message) : 'Request failed.',
-    };
-  }
-
-  function saveSession(token, user) {
-    sessionStorage.setItem(TOKEN_KEY, token);
+  function writeSession(user, token) {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-    sessionStorage.setItem(LEGACY_USER_KEY, user.name || '');
-    sessionStorage.setItem(LEGACY_ROLE_KEY, user.role || '');
+    if (token) {
+      sessionStorage.setItem(TOKEN_KEY, token);
+    }
   }
 
   function clearSession() {
-    sessionStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(LEGACY_USER_KEY);
-    sessionStorage.removeItem(LEGACY_ROLE_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
   }
 
-  function getSession() {
-    try {
-      const raw = sessionStorage.getItem(SESSION_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (_error) {
-      return null;
+  function token() {
+    return sessionStorage.getItem(TOKEN_KEY);
+  }
+
+  async function request(path, options) {
+    const opts = options || {};
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+
+    if (opts.auth !== false && token()) {
+      headers.Authorization = 'Bearer ' + token();
     }
+
+    const response = await fetch(API_BASE + path, {
+      method: opts.method || 'GET',
+      headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+
+    const payload = await response.json().catch(function () { return {}; });
+    if (!response.ok) {
+      if (response.status === 401) {
+        clearSession();
+      }
+      const error = new Error(payload.error || 'Request failed.');
+      error.status = response.status;
+      throw error;
+    }
+
+    return payload;
   }
 
-  function routeForRole(role) {
-    if (role === 'admin') return 'dashboard.html';
-    if (role === 'operator') return 'managetour.html';
+  function redirectForRole(role) {
+    if (role === 'admin') {
+      return 'dashboard.html';
+    }
+
+    if (role === 'operator') {
+      return 'managetour.html';
+    }
+
     return 'home.html';
   }
 
-  function replaceArray(target, nextItems) {
-    target.splice(0, target.length);
-    nextItems.forEach(function (item) {
-      target.push(item);
-    });
-  }
+  function requireAuth(roles) {
+    const user = readSession();
+    const allowedRoles = roles || [];
 
-  function loadBootstrap() {
-    const result = request('GET', '/bootstrap');
-    if (!result.ok || !result.data) {
-      return result;
+    if (!user || !token()) {
+      window.location.href = 'login.html';
+      return false;
     }
 
-    replaceArray(ATTRACTIONS, result.data.attractions || []);
-    replaceArray(TOURS, result.data.tours || []);
-    replaceArray(REVIEWS, result.data.reviews || []);
+    if (allowedRoles.length && allowedRoles.indexOf(user.role) === -1) {
+      window.location.href = redirectForRole(user.role);
+      return false;
+    }
 
-    if (sessionStorage.getItem(TOKEN_KEY) && !result.data.currentUser) {
+    return true;
+  }
+
+  async function refreshSession() {
+    if (!token()) {
+      return null;
+    }
+
+    const payload = await request('/auth/me');
+    writeSession(payload.user, token());
+    return payload.user;
+  }
+
+  async function initPage(options) {
+    const opts = options || {};
+    const roles = opts.roles || [];
+
+    if (opts.requireAuth && !requireAuth(roles)) {
+      return null;
+    }
+
+    if (token()) {
+      try {
+        const user = await refreshSession();
+        if (opts.requireAuth && !user) {
+          window.location.href = 'login.html';
+          return null;
+        }
+
+        if (user && roles.length && roles.indexOf(user.role) === -1) {
+          window.location.href = redirectForRole(user.role);
+          return null;
+        }
+      } catch (error) {
+        if (opts.requireAuth) {
+          window.location.href = 'login.html';
+          return null;
+        }
+      }
+    }
+
+    if (opts.loadCatalog) {
+      await catalog.load();
+    }
+
+    initNav();
+    return auth.session();
+  }
+
+  const auth = {
+    async login(email, password) {
+      const payload = await request('/auth/login', {
+        method: 'POST',
+        body: { email: email, password: password },
+        auth: false,
+      });
+      writeSession(payload.user, payload.token);
+      return payload.user;
+    },
+
+    async loginGoogle(payload) {
+      const response = await request('/auth/google', {
+        method: 'POST',
+        body: payload,
+        auth: false,
+      });
+      writeSession(response.user, response.token);
+      return response.user;
+    },
+
+    async register(data) {
+      const payload = await request('/auth/register', {
+        method: 'POST',
+        body: data,
+        auth: false,
+      });
+      writeSession(payload.user, payload.token);
+      return payload.user;
+    },
+
+    require: function (roles) {
+      return requireAuth(roles);
+    },
+
+    async refresh() {
+      return refreshSession();
+    },
+
+    session: function () {
+      return readSession();
+    },
+
+    logout: function () {
       clearSession();
-    } else if (result.data.currentUser) {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(result.data.currentUser));
-      sessionStorage.setItem(LEGACY_USER_KEY, result.data.currentUser.name || '');
-      sessionStorage.setItem(LEGACY_ROLE_KEY, result.data.currentUser.role || '');
-    }
+      window.location.href = 'login.html';
+    },
+  };
 
-    return { ok: true, data: result.data };
-  }
+  const catalog = {
+    async load(filters) {
+      const opts = filters || {};
+      const query = new URLSearchParams();
+
+      if (opts.search) {
+        query.set('search', opts.search);
+      }
+
+      if (opts.category) {
+        query.set('category', opts.category);
+      }
+
+      const suffix = query.toString() ? '?' + query.toString() : '';
+      const results = await Promise.all([
+        request('/attractions' + suffix, { auth: false }),
+        request('/tours' + (opts.attractionId ? '?attractionId=' + opts.attractionId : ''), { auth: false }),
+      ]);
+
+      replaceArray(ATTRACTIONS, results[0].attractions || []);
+      replaceArray(TOURS, results[1].tours || []);
+      return { attractions: ATTRACTIONS, tours: TOURS };
+    },
+  };
+
+  const attractions = {
+    async all(filters) {
+      const params = new URLSearchParams();
+      if (filters && filters.search) params.set('search', filters.search);
+      if (filters && filters.category) params.set('category', filters.category);
+      const suffix = params.toString() ? '?' + params.toString() : '';
+      const payload = await request('/attractions' + suffix, { auth: false });
+      replaceArray(ATTRACTIONS, payload.attractions || []);
+      return payload.attractions || [];
+    },
+
+    async categories() {
+      const payload = await request('/attractions/meta/categories', { auth: false });
+      return payload.categories || [];
+    },
+
+    async create(data) {
+      const payload = await request('/attractions', {
+        method: 'POST',
+        body: data,
+      });
+      return payload.attraction;
+    },
+
+    async get(id) {
+      const payload = await request('/attractions/' + id, { auth: false });
+      return payload.attraction;
+    },
+  };
+
+  const tours = {
+    async all(filters) {
+      const params = new URLSearchParams();
+      if (filters && filters.attractionId) params.set('attractionId', filters.attractionId);
+      if (filters && filters.search) params.set('search', filters.search);
+      const suffix = params.toString() ? '?' + params.toString() : '';
+      const payload = await request('/tours' + suffix, { auth: false });
+      replaceArray(TOURS, payload.tours || []);
+      return payload.tours || [];
+    },
+
+    async availability(id, month) {
+      const payload = await request('/tours/' + id + '/availability?month=' + month, { auth: false });
+      return payload.availability || [];
+    },
+
+    async get(id) {
+      const payload = await request('/tours/' + id, { auth: false });
+      return payload.tour;
+    },
+
+    async save(data) {
+      if (data.id) {
+        const payload = await request('/tours/' + data.id, {
+          method: 'PUT',
+          body: data,
+        });
+        return payload.tour;
+      }
+
+      const created = await request('/tours', {
+        method: 'POST',
+        body: data,
+      });
+      return created.tour;
+    },
+  };
+
+  const bookings = {
+    async mine() {
+      const payload = await request('/bookings/mine');
+      return payload.bookings || [];
+    },
+
+    async create(data) {
+      const payload = await request('/bookings', {
+        method: 'POST',
+        body: data,
+      });
+      return payload.booking;
+    },
+
+    async cancel(id) {
+      const payload = await request('/bookings/' + id + '/cancel', {
+        method: 'PATCH',
+      });
+      return payload.booking;
+    },
+  };
+
+  const reviews = {
+    async all(filters) {
+      const params = new URLSearchParams();
+      if (filters && filters.tourID) params.set('tourID', filters.tourID);
+      if (filters && filters.attractionID) params.set('attractionID', filters.attractionID);
+      const suffix = params.toString() ? '?' + params.toString() : '';
+      const payload = await request('/reviews' + suffix, { auth: false });
+      return payload.reviews || [];
+    },
+
+    async forTour(tourID) {
+      return this.all({ tourID: tourID });
+    },
+
+    async submit(data) {
+      const payload = await request('/reviews', {
+        method: 'POST',
+        body: data,
+      });
+      return payload.review;
+    },
+  };
+
+  const analytics = {
+    async dashboard() {
+      const payload = await request('/analytics/dashboard');
+      return payload;
+    },
+  };
+
+  const operators = {
+    async mineTours() {
+      const payload = await request('/operators/me/tours');
+      return payload.tours || [];
+    },
+
+    async all() {
+      const payload = await request('/operators', { auth: false });
+      return payload.operators || [];
+    },
+  };
+
+  const users = {
+    async all() {
+      const payload = await request('/users');
+      return payload.users || [];
+    },
+  };
 
   function getMultiplier(dateStr) {
     const m = new Date(dateStr).getMonth() + 1;
-    if ([12, 1].includes(m)) return { label: 'Peak', mult: 1.25 };
-    if ([6, 7, 8].includes(m)) return { label: 'Off-Peak', mult: 0.85 };
-    return { label: 'Standard', mult: 1.0 };
+    if ([12, 1].indexOf(m) !== -1) return { label: 'Peak', mult: 1.25 };
+    if ([6, 7, 8].indexOf(m) !== -1) return { label: 'Off-Peak', mult: 0.85 };
+    return { label: 'Standard', mult: 1.00 };
   }
 
   function starsHTML(rating, size) {
-    const numericRating = Number(rating || 0);
-    let out = '';
-    for (let i = 1; i <= 5; i += 1) {
-      const color = i <= Math.round(numericRating) ? '#fbc02d' : 'rgba(251,192,45,0.2)';
-      out += '<span style="color:' + color + ';font-size:' + (size || 18) + 'px;">&#9733;</span>';
+    var out = '';
+    var finalSize = size || 18;
+    for (var i = 1; i <= 5; i++) {
+      var color = i <= Math.round(rating) ? '#fbc02d' : 'rgba(251,192,45,0.2)';
+      out += '<span style="color:' + color + ';font-size:' + finalSize + 'px;">&#9733;</span>';
     }
     return out;
   }
@@ -147,226 +376,41 @@ const TT = (function () {
   }
 
   function initNav() {
-    const session = getSession();
+    const s = auth.session();
     const el = document.getElementById('navUser');
-    if (el) {
-      el.textContent = session ? session.name.split(' ')[0].toUpperCase() : '';
+    if (el && s && s.name) {
+      el.textContent = s.name.split(' ')[0].toUpperCase();
     }
 
     const btn = document.getElementById('navLogout');
-    if (btn && !btn.dataset.ttBound) {
-      btn.dataset.ttBound = '1';
-      btn.addEventListener('click', function () {
+    if (btn) {
+      btn.onclick = function () {
         auth.logout();
-      });
+      };
     }
   }
-
-  const auth = {
-    login: function (email, password) {
-      const result = request('POST', '/auth/login', { email: email, password: password });
-      if (!result.ok || !result.data) {
-        return { ok: false, error: result.error };
-      }
-
-      saveSession(result.data.token, result.data.user);
-      loadBootstrap();
-      return { ok: true, user: result.data.user };
-    },
-
-    register: function (payload) {
-      const result = request('POST', '/auth/register', payload);
-      if (!result.ok || !result.data) {
-        return { ok: false, error: result.error };
-      }
-
-      saveSession(result.data.token, result.data.user);
-      loadBootstrap();
-      return { ok: true, user: result.data.user };
-    },
-
-    loginGoogle: function (payload) {
-      const result = request('POST', '/auth/google', payload);
-      if (!result.ok || !result.data) {
-        return { ok: false, error: result.error };
-      }
-
-      saveSession(result.data.token, result.data.user);
-      loadBootstrap();
-      return { ok: true, user: result.data.user };
-    },
-
-    session: function () {
-      return getSession();
-    },
-
-    require: function (allowedRoles) {
-      const session = getSession();
-      if (!session) {
-        window.location.href = 'login.html';
-        return false;
-      }
-
-      if (allowedRoles) {
-        const list = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-        if (list.indexOf(session.role) === -1) {
-          window.location.href = routeForRole(session.role);
-          return false;
-        }
-      }
-
-      return true;
-    },
-
-    logout: function () {
-      clearSession();
-      window.location.href = 'login.html';
-    },
-  };
-
-  const bookings = {
-    mine: function () {
-      const result = request('GET', '/bookings/mine');
-      return result.ok && result.data ? result.data : [];
-    },
-
-    create: function (payload) {
-      const result = request('POST', '/bookings', payload);
-      if (!result.ok || !result.data) {
-        return { ok: false, error: result.error };
-      }
-      return { ok: true, booking: result.data };
-    },
-
-    cancel: function (bookingId) {
-      const result = request('PATCH', '/bookings/' + bookingId + '/cancel');
-      return result.ok;
-    },
-  };
-
-  const reviews = {
-    reload: function () {
-      const result = request('GET', '/reviews');
-      if (result.ok && result.data) {
-        replaceArray(REVIEWS, result.data);
-      }
-      return clone(REVIEWS);
-    },
-
-    all: function () {
-      return clone(REVIEWS);
-    },
-
-    forTour: function (tourId) {
-      return clone(REVIEWS.filter(function (review) {
-        return review.tourID === tourId;
-      }));
-    },
-
-    avgRating: function (tourId) {
-      const tourReviews = REVIEWS.filter(function (review) {
-        return review.tourID === tourId;
-      });
-      if (!tourReviews.length) {
-        return null;
-      }
-      const avg = tourReviews.reduce(function (sum, review) {
-        return sum + Number(review.rating || 0);
-      }, 0) / tourReviews.length;
-      return avg.toFixed(1);
-    },
-
-    submit: function (payload) {
-      const result = request('POST', '/reviews', payload);
-      if (!result.ok || !result.data) {
-        return { ok: false, error: result.error };
-      }
-
-      REVIEWS.unshift(result.data);
-      return { ok: true, review: result.data };
-    },
-  };
-
-  const attractions = {
-    list: function () {
-      return clone(ATTRACTIONS);
-    },
-
-    create: function (payload) {
-      const result = request('POST', '/attractions', payload);
-      if (!result.ok || !result.data) {
-        return { ok: false, error: result.error };
-      }
-
-      loadBootstrap();
-      return { ok: true, attraction: result.data };
-    },
-  };
-
-  const tours = {
-    list: function () {
-      return clone(TOURS);
-    },
-
-    mine: function () {
-      const result = request('GET', '/tours/mine');
-      return result.ok && result.data ? result.data : [];
-    },
-
-    save: function (payload) {
-      const hasId = Boolean(payload.id);
-      const path = hasId ? '/tours/' + payload.id : '/tours';
-      const method = hasId ? 'PUT' : 'POST';
-      const result = request(method, path, payload);
-      if (!result.ok || !result.data) {
-        return { ok: false, error: result.error };
-      }
-
-      loadBootstrap();
-      return { ok: true, tour: result.data };
-    },
-
-    getAvailability: function (tourId, year, month) {
-      const result = request('GET', '/tours/' + tourId + '/availability?year=' + year + '&month=' + month);
-      return result.ok && result.data ? result.data : [];
-    },
-  };
-
-  const analytics = {
-    dashboard: function () {
-      const result = request('GET', '/analytics/dashboard');
-      return result.ok && result.data ? result.data : null;
-    },
-  };
-
-  const users = {
-    list: function () {
-      const result = request('GET', '/users');
-      return result.ok && result.data ? result.data : [];
-    },
-  };
-
-  loadBootstrap();
-
-  document.addEventListener('DOMContentLoaded', function () {
-    initNav();
-  });
 
   return {
     ATTRACTIONS: ATTRACTIONS,
     TOURS: TOURS,
+    analytics: analytics,
+    attractions: attractions,
     auth: auth,
     bookings: bookings,
-    reviews: reviews,
-    attractions: attractions,
-    tours: tours,
-    analytics: analytics,
-    users: users,
-    routeForRole: routeForRole,
-    refresh: loadBootstrap,
+    catalog: catalog,
     getMultiplier: getMultiplier,
-    starsHTML: starsHTML,
     imgFallback: imgFallback,
     initNav: initNav,
+    initPage: initPage,
+    operators: operators,
+    redirectForRole: redirectForRole,
+    reviews: reviews,
+    starsHTML: starsHTML,
+    tours: tours,
+    users: users,
   };
 })();
+
+document.addEventListener('DOMContentLoaded', function () {
+  TT.initNav();
+});

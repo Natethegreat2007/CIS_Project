@@ -4,32 +4,6 @@
 ![tt_readme.png](tt_readme.png)
 ---
 
-## Quick Start
-
-### Requirements
-- Node.js 20 or newer
-
-### Run the project
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Start the integrated app:
-   ```bash
-   npm start
-   ```
-3. Open:
-   [http://localhost:3000/html/login.html](http://localhost:3000/html/login.html)
-
-The backend now serves the frontend and stores demo data locally in `server/data/store.json`, so you do not need MySQL to run the project.
-
-### Demo accounts
-- Admin: `admin@touristtome.bz` / `admin123`
-- Operator: `operator@touristtome.bz` / `operator123`
-- Tourist: `tourist@touristtome.bz` / `tourist123`
-
----
-
 ## Table of Contents
 1. [Project Overview](#project-overview)
 2. [UI Design](#ui-design)

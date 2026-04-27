@@ -1,164 +1,243 @@
 const router = require('express').Router();
-const { readData, updateData } = require('../db');
+const { pool } = require('../db');
+const { ensureAvailabilityForMonth, ensureAvailabilityForRange, toIsoDateString } = require('../lib/availability');
+const { getTourById, listTours } = require('../lib/catalog');
 const { requireAuth, requireRole } = require('../middleware/auth');
-const {
-  getAttraction,
-  getTour,
-  buildAvailability,
-  presentTour,
-} = require('../utils/domain');
 
-router.get('/', async (req, res, next) => {
-  try {
-    const attractionId = req.query.attrID ? Number(req.query.attrID) : null;
-    const data = await readData();
-    const tours = data.tours
-      .filter((entry) => !attractionId || entry.attrID === attractionId)
-      .map((entry) => presentTour(data, entry));
-
-    return res.json(tours);
-  } catch (error) {
-    return next(error);
+async function resolveOperatorId(connection, req) {
+  if (req.user.role === 'operator') {
+    return req.user.operator?.id || null;
   }
+
+  if (req.body.operatorId) {
+    return Number(req.body.operatorId);
+  }
+
+  const [rows] = await connection.query(
+    'SELECT operatorID FROM Operator ORDER BY operatorID ASC LIMIT 1'
+  );
+
+  return rows[0]?.operatorID || null;
+}
+
+router.get('/', async (req, res) => {
+  const tours = await listTours(pool, {
+    attractionId: req.query.attractionId ? Number(req.query.attractionId) : null,
+    search: req.query.search || '',
+  });
+
+  res.json({ tours });
 });
 
-router.get('/mine', requireAuth, requireRole('operator', 'admin'), async (req, res, next) => {
-  try {
-    const data = await readData();
-    const operatorId = req.user.operatorId;
-    const tours = req.user.role === 'admin'
-      ? data.tours
-      : data.tours.filter((entry) => entry.operatorID === operatorId);
+router.get('/:id/availability', async (req, res) => {
+  const tourId = Number(req.params.id);
+  const monthParam = `${req.query.month || ''}`;
+  const match = monthParam.match(/^(\d{4})-(\d{2})$/);
+  const today = new Date();
+  const year = match ? Number(match[1]) : today.getUTCFullYear();
+  const month = match ? Number(match[2]) : today.getUTCMonth() + 1;
 
-    return res.json(tours.map((entry) => presentTour(data, entry)));
-  } catch (error) {
-    return next(error);
+  const [tourRows] = await pool.query(
+    'SELECT tourID, maxCap FROM Tour WHERE tourID = ? LIMIT 1',
+    [tourId]
+  );
+
+  if (!tourRows[0]) {
+    return res.status(404).json({ error: 'Tour not found.' });
   }
+
+  await ensureAvailabilityForMonth(pool, {
+    tourId,
+    maxCapacity: tourRows[0].maxCap,
+    year,
+    month,
+  });
+
+  const [rows] = await pool.query(
+    `
+      SELECT date, slots
+      FROM Availability
+      WHERE tourID = ? AND YEAR(date) = ? AND MONTH(date) = ?
+      ORDER BY date ASC
+    `,
+    [tourId, year, month]
+  );
+
+  res.json({
+    availability: rows.map((row) => ({
+      date: toIsoDateString(new Date(row.date)),
+      slots: Number(row.slots),
+      available: Number(row.slots) > 0,
+    })),
+  });
 });
 
-router.get('/:id/availability', async (req, res, next) => {
-  try {
-    const tourId = Number(req.params.id);
-    const year = Number(req.query.year);
-    const month = Number(req.query.month);
-    const data = await readData();
-    const tour = getTour(data, tourId);
+router.get('/:id', async (req, res) => {
+  const tour = await getTourById(pool, Number(req.params.id));
 
-    if (!tour) {
-      return res.status(404).json({ error: 'Tour not found.' });
-    }
-
-    if (!year || !month || month < 1 || month > 12) {
-      return res.status(400).json({ error: 'A valid year and month are required.' });
-    }
-
-    return res.json(buildAvailability(data, tourId, year, month));
-  } catch (error) {
-    return next(error);
+  if (!tour) {
+    return res.status(404).json({ error: 'Tour not found.' });
   }
+
+  res.json({ tour });
 });
 
-router.get('/:id', async (req, res, next) => {
-  try {
-    const tourId = Number(req.params.id);
-    const data = await readData();
-    const tour = getTour(data, tourId);
+router.post('/', requireAuth, requireRole('admin', 'operator'), async (req, res) => {
+  const {
+    attrID,
+    name,
+    description,
+    durationHours,
+    price,
+    cap,
+    location,
+    imagePath,
+  } = req.body;
 
-    if (!tour) {
-      return res.status(404).json({ error: 'Tour not found.' });
-    }
-
-    return res.json(presentTour(data, tour));
-  } catch (error) {
-    return next(error);
+  if (!attrID || !name || !description || !durationHours || !price || !cap) {
+    return res.status(400).json({ error: 'Attraction, name, description, duration, price, and capacity are required.' });
   }
-});
 
-router.post('/', requireAuth, requireRole('operator', 'admin'), async (req, res, next) => {
+  const connection = await pool.getConnection();
   try {
-    const { attrID, title, description, durationHours, price, maxCap, location, image, color } = req.body;
-    const data = await readData();
+    await connection.beginTransaction();
 
-    if (!attrID || !title || !description || !durationHours || price === undefined || !maxCap) {
-      return res.status(400).json({ error: 'Attraction, title, description, duration, price, and capacity are required.' });
+    const operatorId = await resolveOperatorId(connection, req);
+    if (!operatorId) {
+      await connection.rollback();
+      return res.status(400).json({ error: 'This account is not linked to an operator profile yet.' });
     }
 
-    const attraction = getAttraction(data, Number(attrID));
-    if (!attraction) {
+    const [attrRows] = await connection.query(
+      'SELECT attrID FROM Attraction WHERE attrID = ? LIMIT 1',
+      [Number(attrID)]
+    );
+
+    if (!attrRows[0]) {
+      await connection.rollback();
       return res.status(404).json({ error: 'Linked attraction not found.' });
     }
 
-    if (req.user.role === 'operator' && !req.user.operatorId) {
-      return res.status(400).json({ error: 'Your operator profile is incomplete.' });
-    }
+    const [result] = await connection.query(
+      `
+        INSERT INTO Tour (attrID, operatorID, title, descr, duration, price, maxCap, location, imagePath)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        Number(attrID),
+        operatorId,
+        name.trim(),
+        description.trim(),
+        Number(durationHours),
+        Number(price),
+        Number(cap),
+        location ? location.trim() : null,
+        imagePath || '/images/tour6.jpg',
+      ]
+    );
 
-    const result = await updateData(async (mutableData, helpers) => {
-      const tour = {
-        id: helpers.nextId(mutableData.tours),
-        attrID: Number(attrID),
-        operatorID: req.user.role === 'admin' ? Number(req.body.operatorID || req.user.operatorId || 1) : req.user.operatorId,
-        title: String(title).trim(),
-        description: String(description).trim(),
-        durationHours: Number(durationHours),
-        price: Number(price),
-        maxCap: Number(maxCap),
-        image: image || '/images/tour1.jpg',
-        color: color || attraction.color,
-        location: location ? String(location).trim() : attraction.location,
-      };
-
-      mutableData.tours.push(tour);
-      return { tourId: tour.id };
+    const today = new Date();
+    await ensureAvailabilityForRange(connection, {
+      tourId: result.insertId,
+      maxCapacity: Number(cap),
+      startDate: toIsoDateString(today),
+      endDate: toIsoDateString(new Date(Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate() + 180
+      ))),
     });
 
-    const refreshed = await readData();
-    const createdTour = getTour(refreshed, result.tourId);
-    return res.status(201).json(presentTour(refreshed, createdTour));
+    await connection.commit();
+
+    const tour = await getTourById(pool, result.insertId);
+    return res.status(201).json({ tour });
   } catch (error) {
-    return next(error);
+    await connection.rollback();
+
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'A tour with that name already exists.' });
+    }
+
+    throw error;
+  } finally {
+    connection.release();
   }
 });
 
-router.put('/:id', requireAuth, requireRole('operator', 'admin'), async (req, res, next) => {
+router.put('/:id', requireAuth, requireRole('admin', 'operator'), async (req, res) => {
+  const tourId = Number(req.params.id);
+  const {
+    attrID,
+    name,
+    description,
+    durationHours,
+    price,
+    cap,
+    location,
+    imagePath,
+  } = req.body;
+
+  const connection = await pool.getConnection();
   try {
-    const tourId = Number(req.params.id);
-    const result = await updateData(async (data) => {
-      const tour = data.tours.find((entry) => entry.id === tourId);
-      if (!tour) {
-        return { error: 'Tour not found.', status: 404 };
-      }
+    await connection.beginTransaction();
 
-      if (req.user.role === 'operator' && tour.operatorID !== req.user.operatorId) {
-        return { error: 'You can only edit your own tours.', status: 403 };
-      }
+    const [existingRows] = await connection.query(
+      `
+        SELECT t.tourID, t.operatorID
+        FROM Tour t
+        WHERE t.tourID = ?
+        LIMIT 1
+      `,
+      [tourId]
+    );
 
-      const attraction = getAttraction(data, Number(req.body.attrID || tour.attrID));
-      if (!attraction) {
-        return { error: 'Linked attraction not found.', status: 404 };
-      }
-
-      tour.attrID = Number(req.body.attrID || tour.attrID);
-      tour.title = req.body.title ? String(req.body.title).trim() : tour.title;
-      tour.description = req.body.description ? String(req.body.description).trim() : tour.description;
-      tour.durationHours = req.body.durationHours ? Number(req.body.durationHours) : tour.durationHours;
-      tour.price = req.body.price !== undefined ? Number(req.body.price) : tour.price;
-      tour.maxCap = req.body.maxCap ? Number(req.body.maxCap) : tour.maxCap;
-      tour.location = req.body.location ? String(req.body.location).trim() : tour.location;
-      tour.image = req.body.image || tour.image;
-      tour.color = req.body.color || tour.color || attraction.color;
-
-      return { tourId: tour.id };
-    });
-
-    if (result.error) {
-      return res.status(result.status).json({ error: result.error });
+    if (!existingRows[0]) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Tour not found.' });
     }
 
-    const data = await readData();
-    const tour = getTour(data, result.tourId);
-    return res.json(presentTour(data, tour));
+    if (req.user.role === 'operator' && existingRows[0].operatorID !== req.user.operator?.id) {
+      await connection.rollback();
+      return res.status(403).json({ error: 'You can only edit your own tours.' });
+    }
+
+    await connection.query(
+      `
+        UPDATE Tour
+        SET
+          attrID = ?,
+          title = ?,
+          descr = ?,
+          duration = ?,
+          price = ?,
+          maxCap = ?,
+          location = ?,
+          imagePath = ?
+        WHERE tourID = ?
+      `,
+      [
+        Number(attrID),
+        name.trim(),
+        description.trim(),
+        Number(durationHours),
+        Number(price),
+        Number(cap),
+        location ? location.trim() : null,
+        imagePath || null,
+        tourId,
+      ]
+    );
+
+    await connection.commit();
+
+    const tour = await getTourById(pool, tourId);
+    return res.json({ tour });
   } catch (error) {
-    return next(error);
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
   }
 });
 

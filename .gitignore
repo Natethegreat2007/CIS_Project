@@ -13,5 +13,3 @@
 /postman
 .postman
 node_modules/
-server/data/store.json
-.playwright-cli/

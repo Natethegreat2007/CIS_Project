@@ -160,15 +160,10 @@ textarea::placeholder { color: rgba(26,77,46,0.4); }
 
 <script src="tt-data.js"></script>
 <script>
-TT.auth.require();
-
 var selRating = 0;
-var params = new URLSearchParams(location.search);
-var selTourID = parseInt(params.get('tourID')) || null;
-var session   = TT.auth.session();
-
-// Set reviewer name
-if (session) document.getElementById('reviewerName').textContent = session.name.toUpperCase();
+var selTourID = null;
+var session   = null;
+var allReviews = [];
 
 // ── Tour filter pills ──────────────────────────────────────
 function initPills() {
@@ -187,14 +182,6 @@ function initPills() {
         renderReviews();
         renderAvg();
     });
-
-    if (selTourID) {
-        var pill = row.querySelector('[data-tid="' + selTourID + '"]');
-        if (pill) {
-            row.querySelectorAll('.tf-pill').forEach(function(b){ b.classList.remove('active'); });
-            pill.classList.add('active');
-        }
-    }
 }
 
 // ── Star rating input ─────────────────────────────────────
@@ -209,7 +196,7 @@ document.querySelectorAll('.clickable-star').forEach(function(star, idx) {
 
 // ── Render avg score ──────────────────────────────────────
 function renderAvg() {
-    var all = selTourID ? TT.reviews.forTour(selTourID) : TT.reviews.all();
+    var all = selTourID ? allReviews.filter(function(r){ return r.tourID === selTourID; }) : allReviews.slice();
     var avg = all.length ? (all.reduce(function(s,r){ return s+r.rating; }, 0) / all.length) : null;
     document.getElementById('avgNum').textContent   = avg ? avg.toFixed(1) : '—';
     document.getElementById('avgStars').innerHTML   = avg ? TT.starsHTML(avg, 30) : '';
@@ -218,7 +205,7 @@ function renderAvg() {
 
 // ── Render review list ────────────────────────────────────
 function renderReviews() {
-    var list = selTourID ? TT.reviews.forTour(selTourID) : TT.reviews.all();
+    var list = selTourID ? allReviews.filter(function(r){ return r.tourID === selTourID; }) : allReviews.slice();
     var el   = document.getElementById('reviewList');
 
     if (!list.length) {
@@ -243,7 +230,7 @@ function renderReviews() {
 }
 
 // ── Submit review ─────────────────────────────────────────
-function submitReview() {
+async function submitReview() {
     var text = document.getElementById('reviewText').value.trim();
     var ok   = document.getElementById('okMsg');
     var err  = document.getElementById('errMsg');
@@ -252,24 +239,34 @@ function submitReview() {
     if (!selRating) { err.textContent = 'Please select a star rating.'; err.style.display = 'block'; return; }
     if (!text)      { err.textContent = 'Please write something.';       err.style.display = 'block'; return; }
 
-    // Use selected tour or first tour as default
-    var tourID = selTourID || TT.TOURS[0].id;
-    var result = TT.reviews.submit({ tourID, rating: selRating, comment: text });
+    var tourID = selTourID || (TT.TOURS[0] && TT.TOURS[0].id);
+    if (!tourID) { err.textContent = 'No tours are available to review right now.'; err.style.display = 'block'; return; }
 
-    if (!result.ok) { err.textContent = result.error; err.style.display = 'block'; return; }
-
-    document.getElementById('reviewText').value = '';
-    selRating = 0;
-    document.querySelectorAll('.clickable-star').forEach(function(s){ s.classList.remove('active'); });
-    ok.style.display = 'block';
-    setTimeout(function(){ ok.style.display = 'none'; }, 3000);
-    renderReviews();
-    renderAvg();
+    try {
+        var review = await TT.reviews.submit({ tourID: tourID, rating: selRating, comment: text });
+        allReviews.unshift(review);
+        document.getElementById('reviewText').value = '';
+        selRating = 0;
+        document.querySelectorAll('.clickable-star').forEach(function(s){ s.classList.remove('active'); });
+        ok.style.display = 'block';
+        setTimeout(function(){ ok.style.display = 'none'; }, 3000);
+        renderReviews();
+        renderAvg();
+    } catch (error) {
+        err.textContent = error.message || 'Unable to submit review.';
+        err.style.display = 'block';
+    }
 }
 
-initPills();
-renderAvg();
-renderReviews();
+(async function () {
+    session = await TT.initPage({ requireAuth: true, loadCatalog: true });
+    if (!session) return;
+    document.getElementById('reviewerName').textContent = session.name.toUpperCase();
+    allReviews = await TT.reviews.all();
+    initPills();
+    renderAvg();
+    renderReviews();
+})();
 </script>
 </body>
 </html>

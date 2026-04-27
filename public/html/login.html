@@ -12,7 +12,7 @@
 
 body {
     margin: 0;
-    font-family: Arial,serif;
+    font-family: Arial, serif;
     background-image: url("../images/jungle-bg.jpg");
     background-size: cover;
     background-position: center;
@@ -32,7 +32,7 @@ body {
 }
 
 h1 {
-    font-family: 'Luckiest Guy',serif;
+    font-family: 'Luckiest Guy', serif;
     font-size: 70px;
     color: yellow;
     text-shadow: 5px 5px black;
@@ -45,11 +45,10 @@ h1 {
     width: 500px;
     padding: 50px;
     border-radius: 30px;
-    margin: -20px auto 0 auto; /* pulls it upward */
+    margin: -20px auto 0 auto;
     text-align: center;
 }
 
-/* Google button — slotted in above the inputs */
 .google-wrap {
     display: flex;
     justify-content: center;
@@ -62,17 +61,18 @@ h1 {
     gap: 12px;
     margin: 4px 0 2px;
     color: rgba(255,255,255,0.45);
-    font-family: 'Luckiest Guy',serif;
+    font-family: 'Luckiest Guy', serif;
     font-size: 13px;
     letter-spacing: 2px;
 }
-.divider::before, .divider::after {
+
+.divider::before,
+.divider::after {
     content: '';
     flex: 1;
     height: 1px;
     background: rgba(255,255,255,0.25);
 }
-
 
 .login-box input {
     width: 90%;
@@ -82,7 +82,7 @@ h1 {
     border: none;
     display: block;
     margin: 12px auto;
-    font-family: 'Luckiest Guy',serif;
+    font-family: 'Luckiest Guy', serif;
     outline: none;
 }
 
@@ -91,12 +91,14 @@ h1 {
     margin-top: 4px;
     cursor: pointer;
     color: rgba(255,255,255,0.7);
-    font-family: 'Luckiest Guy',serif;
+    font-family: 'Luckiest Guy', serif;
     letter-spacing: 1px;
 }
-.forgot:hover { color: #cddc39; }
 
-/* Subtle error */
+.forgot:hover {
+    color: #cddc39;
+}
+
 .error-msg {
     background: rgba(255, 50, 50, 0.25);
     border: 2px solid #ff5252;
@@ -112,18 +114,6 @@ h1 {
     margin-right: auto;
 }
 
-/* Demo hint — small and subtle, doesn't clutter the original look */
-.demo-hint {
-    margin-top: 14px;
-    font-family: 'Luckiest Guy';
-    font-size: 12px;
-    color: rgba(255,255,255,0.3);
-    line-height: 1.8;
-    letter-spacing: 0.5px;
-}
-.demo-hint strong { color: rgba(255,255,255,0.5); }
-
-/* Original fixed corner buttons — pixel perfect */
 .go-btn {
     position: fixed;
     bottom: 30px;
@@ -140,8 +130,16 @@ h1 {
     transition: 0.3s;
     box-shadow: 0 6px 0 #888800;
 }
-.go-btn:hover  { background: #eeee00; transform: scale(1.07); }
-.go-btn:active { transform: translateY(4px) scale(1); box-shadow: 0 2px 0 #888800; }
+
+.go-btn:hover {
+    background: #eeee00;
+    transform: scale(1.07);
+}
+
+.go-btn:active {
+    transform: translateY(4px) scale(1);
+    box-shadow: 0 2px 0 #888800;
+}
 
 .register-btn {
     position: fixed;
@@ -163,7 +161,11 @@ h1 {
     justify-content: center;
     box-shadow: 0 6px 0 #888800;
 }
-.register-btn:hover { background: #eeee00; transform: scale(1.07); }
+
+.register-btn:hover {
+    background: #eeee00;
+    transform: scale(1.07);
+}
 
 </style>
 </head>
@@ -177,13 +179,8 @@ h1 {
 <br>
 
 <div class="login-box">
-
-    <!-- Google Sign-In ──────────────────────────────────────
-         To activate: replace YOUR_GOOGLE_CLIENT_ID_HERE with
-         your real Client ID from console.cloud.google.com
-    ──────────────────────────────────────────────────────── -->
     <div id="g_id_onload"
-         data-client_id="53379048140-sft8no01d3p8cacouia32jmevk7msssf.apps.googleusercontent.com"
+         data-client_id="YOUR_GOOGLE_CLIENT_ID_HERE"
          data-callback="handleGoogleLogin"
          data-auto_prompt="false">
     </div>
@@ -202,12 +199,10 @@ h1 {
 
     <div class="error-msg" id="errorMsg"></div>
 
-    <input type="email"    id="emailInput"    placeholder="Email">
+    <input type="email" id="emailInput" placeholder="Email">
     <input type="password" id="passwordInput" placeholder="Password">
 
     <div class="forgot" onclick="forgotPassword()">FORGOT PASSWORD?</div>
-
-   
 </div>
 
 <button class="go-btn" onclick="handleLogin()">GO!</button>
@@ -215,31 +210,42 @@ h1 {
 
 <script src="tt-data.js"></script>
 <script>
+if (TT.auth.session()) {
+    location.href = TT.redirectForRole(TT.auth.session().role);
+}
 
-function handleLogin() {
+async function handleLogin() {
     const email = document.getElementById('emailInput').value.trim();
     const pass  = document.getElementById('passwordInput').value;
+    const err   = document.getElementById('errorMsg');
 
-    if (!email || !pass) { showErr('Enter your email and password.'); return; }
+    if (!email || !pass) {
+        showErr('Enter your email and password.');
+        return;
+    }
 
-    const result = TT.auth.login(email, pass);
-    if (!result.ok) { showErr(result.error || 'Wrong email or password.'); return; }
-
-    document.getElementById('errorMsg').style.display = 'none';
-    redirect(result.user.role);
+    try {
+        const user = await TT.auth.login(email, pass);
+        err.style.display = 'none';
+        location.href = TT.redirectForRole(user.role);
+    } catch (error) {
+        showErr(error.message || 'Wrong email or password.');
+    }
 }
 
-function handleGoogleLogin(response) {
-    const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-    const result = TT.auth.loginGoogle({ email: payload.email, name: payload.name });
-    if (!result.ok) { showErr(result.error || 'Google sign-in failed.'); return; }
-    redirect(result.user.role);
-}
+async function handleGoogleLogin(response) {
+    const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
 
-function redirect(role) {
-    if      (role === 'admin')    location.href = 'dashboard.html';
-    else if (role === 'operator') location.href = 'managetour.html';
-    else                          location.href = 'home.html';
+    try {
+        const user = await TT.auth.loginGoogle({
+            email: payload.email,
+            name: payload.name,
+            role: 'tourist'
+        });
+        location.href = TT.redirectForRole(user.role);
+    } catch (error) {
+        showErr(error.message || 'Google login failed.');
+    }
 }
 
 function showErr(msg) {
@@ -250,10 +256,14 @@ function showErr(msg) {
 
 function forgotPassword() {
     const e = document.getElementById('emailInput').value.trim();
-    alert(e ? `Password reset sent to ${e} (demo mode).` : 'Enter your email address first.');
+    alert(e ? `Password reset is not enabled yet for ${e}.` : 'Enter your email address first.');
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+        handleLogin();
+    }
+});
 </script>
 
 </body>

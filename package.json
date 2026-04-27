@@ -1,11 +1,11 @@
 {
   "name": "cis-final-project",
   "version": "1.0.0",
-  "main": "server/server.js",
+  "main": "index.js",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "node --watch server/server.js",
-    "test": "echo \"No automated tests configured yet.\""
+    "db:init": "node server/init.js",
+    "test": "echo \"No automated tests configured\""
   },
   "keywords": [],
   "author": "",
@@ -19,5 +19,5 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.19.1"
   },
-  "description": "Tourist Tome integrated frontend and backend project."
+  "description": ""
 }

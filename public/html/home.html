@@ -254,6 +254,11 @@ function renderAttractions() {
 // ── Render tours strip ────────────────────────────────────
 function renderTours() {
     var strip = document.getElementById('tourStrip');
+    if (!TT.TOURS.length) {
+        strip.innerHTML = '<p style="color:rgba(255,255,0,0.35);">No tours available right now.</p>';
+        return;
+    }
+
     strip.innerHTML = TT.TOURS.map(function(t) {
         return '<a class="tour-pill" href="bookings.html?tourID=' + t.id + '">' +
             '<div class="tour-circle" style="background:' + t.color + '">' +
@@ -266,8 +271,12 @@ function renderTours() {
     }).join('');
 }
 
-renderAttractions();
-renderTours();
+(async function () {
+    var session = await TT.initPage({ requireAuth: true, loadCatalog: true });
+    if (!session) return;
+    renderAttractions();
+    renderTours();
+})();
 </script>
 </body>
 </html>

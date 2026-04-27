@@ -6,6 +6,7 @@
 <title>Tourist Tome - Admin Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
 <style>
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     background-color: #1a4d2e;
@@ -15,6 +16,8 @@ body {
     color: #ffff00;
     min-height: 100vh;
 }
+
+
 nav {
     position: sticky; top: 0; z-index: 200;
     background: #0d3320;
@@ -23,25 +26,83 @@ nav {
     padding: 0 30px; height: 70px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
-.nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-right: 28px; flex-shrink: 0; }
+.nav-logo {
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none; margin-right: 28px; flex-shrink: 0;
+}
 .nav-logo img { height: 46px; width: auto; }
-.nav-logo span { font-size: 1.55rem; color: yellow; text-shadow: 2px 2px black; letter-spacing: 2px; }
+.nav-logo span {
+    font-family: 'Luckiest Guy';
+    font-size: 1.55rem; color: yellow;
+    text-shadow: 2px 2px black; letter-spacing: 2px;
+}
 .nav-links { display: flex; align-items: center; gap: 4px; }
-.nav-links a { color: rgba(255,255,0,0.6); text-decoration: none; font-size: 1rem; letter-spacing: 1px; padding: 8px 15px; border-radius: 10px; transition: 0.2s; }
-.nav-links a:hover, .nav-links a.active { color: yellow; background: rgba(255,255,0,0.12); }
+.nav-links a {
+    color: rgba(255,255,0,0.6);
+    text-decoration: none;
+    font-family: 'Luckiest Guy';
+    font-size: 1rem; letter-spacing: 1px;
+    padding: 8px 15px; border-radius: 10px;
+    transition: 0.2s;
+}
+.nav-links a:hover, .nav-links a.active {
+    color: yellow; background: rgba(255,255,0,0.12);
+}
 .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-.nav-user { background: rgba(255,255,0,0.12); border: 2px solid #fbc02d; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: yellow; letter-spacing: 1px; }
-.nav-logout { background: yellow; color: #1a4d2e; border: none; border-radius: 12px; padding: 8px 18px; font-family: 'Luckiest Guy'; font-size: 0.95rem; letter-spacing: 1px; cursor: pointer; box-shadow: 0 4px 0 #888800; transition: 0.1s; }
+.nav-search {
+    background: white; border-radius: 50px;
+    border: 3px solid black; padding: 5px 16px;
+    display: flex; align-items: center; gap: 6px;
+}
+.nav-search input {
+    border: none; outline: none;
+    font-family: 'Luckiest Guy'; font-size: 0.85rem;
+    width: 145px; color: #1a4d2e; background: transparent;
+}
+.nav-user {
+    background: rgba(255,255,0,0.12);
+    border: 2px solid #fbc02d; border-radius: 20px;
+    padding: 4px 14px; font-size: 0.8rem;
+    color: yellow; letter-spacing: 1px;
+}
+.nav-logout {
+    background: yellow; color: #1a4d2e;
+    border: none; border-radius: 12px;
+    padding: 8px 18px; font-family: 'Luckiest Guy';
+    font-size: 0.95rem; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 4px 0 #888800;
+    transition: 0.1s;
+}
 .nav-logout:hover { background: #eeee00; }
 .nav-logout:active { transform: translateY(3px); box-shadow: 0 1px 0 #888800; }
+
 .page-wrap { max-width: 1280px; margin: 0 auto; padding: 36px 40px; animation: fadeUp 0.3s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
 .page-title { font-size: 60px; text-shadow: 4px 4px black; margin-bottom: 30px; letter-spacing: 2px; }
+.section-title { font-size: 36px; text-shadow: 3px 3px black; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,0,0.2); padding-bottom: 8px; }
 .back-nav { font-size: 45px; color: orange; cursor: pointer; display: inline-block; margin-bottom: 12px; text-decoration: none; transition: transform 0.2s; }
 .back-nav:hover { transform: translateX(-8px); }
+.input-field {
+    width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d;
+    border-radius: 20px; padding: 12px 18px; color: #ffff00;
+    font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
+    box-sizing: border-box; transition: border-color 0.2s;
+}
+.input-field:focus { border-color: yellow; }
+.input-field::placeholder { color: rgba(255,255,0,0.4); }
+.input-field option { background: #1a4d2e; }
+.ybtn {
+    background: #cddc39; color: #1a4d2e; border: none;
+    border-radius: 14px; padding: 13px 30px;
+    font-family: 'Luckiest Guy'; font-size: 20px; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 5px 0 #689f38; transition: 0.1s;
+}
+.ybtn:hover { background: #ddef48; }
+.ybtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #689f38; }
 .alert { padding: 12px 18px; border-radius: 14px; font-size: 17px; margin-bottom: 16px; display: none; }
 .alert-ok  { background: rgba(205,220,57,0.12); border: 2px solid #cddc39; color: #cddc39; }
 .alert-err { background: rgba(255,82,82,0.12);  border: 2px solid #ff5252;  color: #ff5252; }
+
 .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 18px; }
 .input-item { display: flex; flex-direction: column; gap: 10px; }
 .input-item label { font-size: 20px; }
@@ -51,21 +112,23 @@ nav {
     font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
     box-sizing: border-box; transition: border-color 0.2s;
 }
-.input-item textarea { min-height: 90px; resize: vertical; }
-.input-item input:focus, .input-item textarea:focus, .input-item select:focus { border-color: yellow; }
+.input-item textarea {
+    min-height: 90px; resize: vertical;
+}
+.input-item input:focus, .input-item textarea:focus, .input-item select:focus {
+    border-color: yellow;
+}
 .input-item input::placeholder, .input-item textarea::placeholder { color: rgba(255,255,0,0.4); }
 .input-item select option { background: #1a4d2e; }
 h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 6px; margin: 36px 0 20px; }
 .user-manager { display: flex; gap: 36px; margin-top: 24px; overflow-x: auto; padding-bottom: 18px; }
 .user-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; }
-.avatar {
-    width: 100px; height: 100px; border-radius: 50%;
-    border: 3px solid #fbc02d; background: linear-gradient(135deg, #cddc39, #1565c0);
-    display: flex; align-items: center; justify-content: center;
-    color: #1a4d2e; font-size: 28px;
-}
+.avatar { width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 3px solid #fbc02d; background: #cbd5e0; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
 .edit-btn { background: #fbc02d; color: #1a4d2e; border: none; padding: 10px 22px; border-radius: 10px; font-family: 'Luckiest Guy'; cursor: pointer; font-size: 18px; box-shadow: 0 4px 0 #b8860b; transition: 0.1s; }
 .edit-btn:hover { background: #f5b800; }
+.edit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #b8860b; }
+
 </style>
 </head>
 <body>
@@ -84,7 +147,6 @@ h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(
   <a class="back-nav" href="dashboard.html">&#8592;</a>
   <h1 class="page-title">ADMIN DASHBOARD</h1>
   <div id="createAlert" class="alert alert-ok">Attraction created successfully!</div>
-  <div id="errorAlert" class="alert alert-err"></div>
 
   <h2>CREATE ATTRACTION</h2>
   <div class="form-grid">
@@ -109,82 +171,58 @@ h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(
       <textarea id="attrDesc" placeholder="Enter.."></textarea>
     </div>
   </div>
-  <button class="edit-btn" style="margin-top:20px;" onclick="createAttraction()">CREATE ATTRACTION</button>
+  <button class="ybtn" style="margin-top:20px;" onclick="createAttraction()">CREATE ATTRACTION</button>
 
   <h2>USER MANAGER</h2>
   <div class="user-manager" id="userManager"></div>
 </div>
-
 <script src="tt-data.js"></script>
 <script>
-TT.auth.require('admin');
-
-var categoryStyles = {
-  Archaeological: { color: '#6d4c41', image: '/images/ruins.jpg' },
-  Marine: { color: '#1565c0', image: '/images/bluehole.jpg' },
-  Wildlife: { color: '#2e7d32', image: '/images/Cockscomb.jpg' },
-  Cultural: { color: '#8d6e63', image: '/images/beach.jpg' }
-};
-
-function showAlert(id, message) {
-  var el = document.getElementById(id);
-  el.textContent = message;
-  el.style.display = 'block';
-  setTimeout(function(){ el.style.display = 'none'; }, 3000);
-}
-
-function initials(name) {
-  return name.split(' ').map(function(part){ return part.charAt(0); }).join('').slice(0, 2);
-}
-
-function renderUsers() {
-  var users = TT.users.list();
-  var wrap = document.getElementById('userManager');
-  wrap.innerHTML = users.map(function(user) {
+function renderUsers(users) {
+  document.getElementById('userManager').innerHTML = users.map(function(user) {
     return '<div class="user-card">' +
-      '<div class="avatar">' + initials(user.name) + '</div>' +
+      '<div class="avatar"></div>' +
       '<span>' + user.name + '</span>' +
       '<span style="font-size:13px;color:#cddc39;">' + user.role.toUpperCase() + '</span>' +
-      '<button class="edit-btn" type="button">' + (user.companyName ? user.companyName : user.email) + '</button>' +
-      '</div>';
+      '<button class="edit-btn" type="button">' + (user.companyName || user.email) + '</button>' +
+    '</div>';
   }).join('');
 }
 
-function createAttraction() {
+async function createAttraction() {
   var n = document.getElementById('attrName').value.trim();
   var t = document.getElementById('attrType').value;
   var p = document.getElementById('attrPrice').value;
   var d = document.getElementById('attrDesc').value.trim();
+  if (!n || !t || !p || !d) { alert('Name, type, price, and description are required.'); return; }
 
-  if (!n || !t || !p || !d) {
-    showAlert('errorAlert', 'Name, type, price, and description are required.');
-    return;
+  try {
+    await TT.attractions.create({
+      name: n,
+      category: t,
+      price: Number(p),
+      description: d,
+      location: 'Belize'
+    });
+
+    var al = document.getElementById('createAlert');
+    al.style.display = 'block';
+    setTimeout(function(){ al.style.display = 'none'; }, 3000);
+    document.getElementById('attrName').value = '';
+    document.getElementById('attrType').value = '';
+    document.getElementById('attrPrice').value = '';
+    document.getElementById('attrDesc').value = '';
+  } catch (error) {
+    alert(error.message || 'Unable to create attraction.');
   }
-
-  var style = categoryStyles[t] || { color: '#1a4d2e', image: '/images/beach.jpg' };
-  var result = TT.attractions.create({
-    name: n,
-    category: t,
-    price: Number(p),
-    description: d,
-    location: 'Belize',
-    image: style.image,
-    color: style.color
-  });
-
-  if (!result.ok) {
-    showAlert('errorAlert', result.error || 'Unable to create attraction.');
-    return;
-  }
-
-  showAlert('createAlert', 'Attraction created successfully!');
-  document.getElementById('attrName').value = '';
-  document.getElementById('attrType').value = '';
-  document.getElementById('attrPrice').value = '';
-  document.getElementById('attrDesc').value = '';
 }
 
-renderUsers();
+(async function () {
+  var session = await TT.initPage({ requireAuth: true, roles: ['admin'] });
+  if (!session) return;
+  var users = await TT.users.all();
+  renderUsers(users);
+})();
 </script>
 </body>
 </html>

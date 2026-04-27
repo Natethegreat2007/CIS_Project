@@ -1,35 +1,41 @@
 const router = require('express').Router();
-const { readData } = require('../db');
+const { pool } = require('../db');
+const { listTours } = require('../lib/catalog');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
-router.get('/', async (_req, res, next) => {
-  try {
-    const data = await readData();
-    const operators = data.operators.map((entry) => ({
-      id: entry.id,
-      companyName: entry.companyName,
-      contactEmail: entry.contactEmail,
-      phoneNum: entry.phoneNum,
-    }));
-
-    return res.json(operators);
-  } catch (error) {
-    return next(error);
-  }
+router.get('/me', requireAuth, requireRole('operator', 'admin'), async (req, res) => {
+  res.json({ operator: req.user.operator });
 });
 
-router.get('/me', requireAuth, requireRole('operator', 'admin'), async (req, res, next) => {
-  try {
-    const data = await readData();
-    const operator = data.operators.find((entry) => entry.id === req.user.operatorId);
-    if (!operator) {
-      return res.status(404).json({ error: 'Operator profile not found.' });
-    }
+router.get('/me/tours', requireAuth, requireRole('operator', 'admin'), async (req, res) => {
+  let operatorId = req.user.operator?.id || null;
 
-    return res.json(operator);
-  } catch (error) {
-    return next(error);
+  if (req.user.role === 'admin' && req.query.operatorId) {
+    operatorId = Number(req.query.operatorId);
   }
+
+  if (!operatorId) {
+    return res.json({ tours: [] });
+  }
+
+  const tours = await listTours(pool, { operatorId });
+  res.json({ tours });
+});
+
+router.get('/', async (req, res) => {
+  const [rows] = await pool.query(
+    `
+      SELECT
+        operatorID AS id,
+        companyName,
+        contactEmail,
+        phoneNum
+      FROM Operator
+      ORDER BY companyName ASC
+    `
+  );
+
+  res.json({ operators: rows });
 });
 
 module.exports = router;

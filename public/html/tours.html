@@ -6,6 +6,7 @@
 <title>Tourist Tome - Tours</title>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
 <style>
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     background-color: #1a4d2e;
@@ -15,6 +16,8 @@ body {
     color: #ffff00;
     min-height: 100vh;
 }
+
+
 nav {
     position: sticky; top: 0; z-index: 200;
     background: #0d3320;
@@ -54,7 +57,7 @@ nav {
 .nav-search input {
     border: none; outline: none;
     font-family: 'Luckiest Guy'; font-size: 0.85rem;
-    width: 180px; color: #1a4d2e; background: transparent;
+    width: 145px; color: #1a4d2e; background: transparent;
 }
 .nav-user {
     background: rgba(255,255,0,0.12);
@@ -75,9 +78,32 @@ nav {
 
 .page-wrap { max-width: 1280px; margin: 0 auto; padding: 36px 40px; animation: fadeUp 0.3s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
-header { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; flex-wrap: wrap; }
-.page-title { font-size: 60px; text-shadow: 4px 4px black; letter-spacing: 2px; }
-.section-subtitle { color: rgba(255,255,255,0.55); font-size: 18px; }
+.page-title { font-size: 60px; text-shadow: 4px 4px black; margin-bottom: 30px; letter-spacing: 2px; }
+.section-title { font-size: 36px; text-shadow: 3px 3px black; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,0,0.2); padding-bottom: 8px; }
+.back-nav { font-size: 45px; color: orange; cursor: pointer; display: inline-block; margin-bottom: 12px; text-decoration: none; transition: transform 0.2s; }
+.back-nav:hover { transform: translateX(-8px); }
+.input-field {
+    width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d;
+    border-radius: 20px; padding: 12px 18px; color: #ffff00;
+    font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
+    box-sizing: border-box; transition: border-color 0.2s;
+}
+.input-field:focus { border-color: yellow; }
+.input-field::placeholder { color: rgba(255,255,0,0.4); }
+.input-field option { background: #1a4d2e; }
+.ybtn {
+    background: #cddc39; color: #1a4d2e; border: none;
+    border-radius: 14px; padding: 13px 30px;
+    font-family: 'Luckiest Guy'; font-size: 20px; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 5px 0 #689f38; transition: 0.1s;
+}
+.ybtn:hover { background: #ddef48; }
+.ybtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #689f38; }
+.alert { padding: 12px 18px; border-radius: 14px; font-size: 17px; margin-bottom: 16px; display: none; }
+.alert-ok  { background: rgba(205,220,57,0.12); border: 2px solid #cddc39; color: #cddc39; }
+.alert-err { background: rgba(255,82,82,0.12);  border: 2px solid #ff5252;  color: #ff5252; }
+
+header { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; }
 .filter-btn {
     background: white; color: black; border-radius: 50px;
     padding: 6px 22px; font-family: 'Luckiest Guy';
@@ -101,7 +127,6 @@ header { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; fle
 .tour-info-text { color: white; font-size: 16px; line-height: 1.5; flex: 1; }
 .tour-name { font-size: 26px; color: yellow; text-shadow: 2px 2px black; display: block; margin-bottom: 6px; }
 .tour-price { font-size: 28px; color: #cddc39; text-shadow: 2px 2px black; margin-top: 8px; display: block; }
-.tour-meta { font-size: 13px; color: #cddc39; margin-bottom: 8px; }
 .book-btn {
     background-color: #cddc39; color: #1a4d2e;
     border: none; border-radius: 15px; padding: 16px;
@@ -109,10 +134,7 @@ header { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; fle
     text-align: center; box-shadow: 0 6px 0 #689f38; transition: 0.1s;
 }
 .book-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #689f38; }
-.empty-state {
-    text-align: center; padding: 60px 20px;
-    color: rgba(255,255,0,0.4); font-size: 24px;
-}
+
 </style>
 </head>
 <body>
@@ -124,7 +146,8 @@ header { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; fle
   <div class="nav-links"><a href="home.html">HOME</a><a href="tours.html" class="active">ATTRACTION</a><a href="bookings.html">BOOK TOUR</a><a href="mybookings.html">MYBOOKING</a><a href="Review.html">REVIEWS</a></div>
   <div class="nav-right">
     <div class="nav-search">
-      <input type="text" id="searchInput" placeholder="Search tours">
+      <input type="text" placeholder="Search">
+      <img src="search-icon.png" alt="search" style="width:18px;" onerror="this.style.display='none'">
     </div>
     <span class="nav-user" id="navUser"></span>
     <button class="nav-logout" id="navLogout">LOGOUT</button>
@@ -132,60 +155,41 @@ header { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; fle
 </nav>
 <div class="page-wrap">
   <header>
-    <div>
-      <h1 class="page-title" id="pageTitle">TOURS</h1>
-      <div class="section-subtitle" id="pageSubtitle">Browse available adventures across Belize.</div>
-    </div>
-    <button class="filter-btn" type="button">LIVE DATA</button>
+    <h1 class="page-title">TOURS</h1>
+    <button class="filter-btn">FILTERS <span>&#9660;</span></button>
   </header>
   <div class="tours-grid" id="toursGrid"></div>
 </div>
 
 <script src="tt-data.js"></script>
 <script>
-var params = new URLSearchParams(location.search);
-var selectedAttractionId = parseInt(params.get('attrID')) || null;
-
-if (selectedAttractionId) {
-    var attraction = TT.ATTRACTIONS.find(function(item) { return item.id === selectedAttractionId; });
-    if (attraction) {
-        document.getElementById('pageTitle').textContent = attraction.name.toUpperCase() + ' TOURS';
-        document.getElementById('pageSubtitle').textContent = attraction.desc;
-    }
-}
-
 function renderTours() {
-    var query = document.getElementById('searchInput').value.trim().toLowerCase();
-    var list = TT.TOURS.filter(function(tour) {
-        var matchesAttraction = !selectedAttractionId || tour.attrID === selectedAttractionId;
-        var haystack = [tour.name, tour.operator, tour.location, tour.attractionName, tour.desc].join(' ').toLowerCase();
-        return matchesAttraction && haystack.indexOf(query) !== -1;
-    });
-
     var grid = document.getElementById('toursGrid');
-    if (!list.length) {
-        grid.innerHTML = '<div class="empty-state">No tours matched your search.</div>';
+    if (!TT.TOURS.length) {
+        grid.innerHTML = '<p style="color:rgba(255,255,0,0.35);">No tours available right now.</p>';
         return;
     }
 
-    grid.innerHTML = list.map(function(tour) {
+    grid.innerHTML = TT.TOURS.map(function(t) {
         return '<div class="tour-card">' +
             '<div class="card-top">' +
-                '<div class="tour-circle"><img src="' + tour.img + '" alt="' + tour.name + '"></div>' +
+                '<div class="tour-circle"><img src="' + t.img + '" alt="' + t.name + '" onerror="this.style.opacity=0"></div>' +
                 '<div class="tour-info-text">' +
-                    '<span class="tour-name">' + tour.name.toUpperCase() + '</span>' +
-                    '<div class="tour-meta">' + tour.operator + ' · ' + tour.duration + ' · Max ' + tour.cap + '</div>' +
-                    '<div>' + tour.desc + '</div>' +
-                    '<span class="tour-price">$' + tour.price + '</span>' +
+                    '<span class="tour-name">' + t.name.toUpperCase() + '</span>' +
+                    (t.desc || '') + '<br>' + t.duration + ' &middot; Max ' + t.cap +
+                    '<span class="tour-price">$' + t.price + '</span>' +
                 '</div>' +
             '</div>' +
-            '<button class="book-btn" onclick="window.location.href=\'bookings.html?tourID=' + tour.id + '\'">BOOK NOW</button>' +
+            '<button class="book-btn" onclick="window.location.href=\'bookings.html?tourID=' + t.id + '\'">BOOK NOW</button>' +
         '</div>';
     }).join('');
 }
 
-document.getElementById('searchInput').addEventListener('input', renderTours);
-renderTours();
+(async function () {
+    var session = await TT.initPage({ requireAuth: true, loadCatalog: true });
+    if (!session) return;
+    renderTours();
+})();
 </script>
 </body>
 </html>

@@ -100,10 +100,10 @@ tbody tr:hover td { background: rgba(255,255,255,0.03); }
 
 <script src="tt-data.js"></script>
 <script>
-TT.auth.require();
+var allBookings = [];
 
 function render(filter) {
-    var bkgs = TT.bookings.mine();
+    var bkgs = allBookings.slice();
     if (filter) bkgs = bkgs.filter(function(b){
         return [b.tourName, b.attraction, b.location, b.status].join(' ').toLowerCase().includes(filter.toLowerCase());
     });
@@ -139,15 +139,25 @@ function render(filter) {
         '</tbody></table>';
 }
 
-function cancelBooking(id) {
+async function cancelBooking(id) {
     if (!confirm('Cancel this booking?')) return;
-    TT.bookings.cancel(id);
-    render(document.getElementById('searchInput').value);
+    try {
+        await TT.bookings.cancel(id);
+        allBookings = await TT.bookings.mine();
+        render(document.getElementById('searchInput').value);
+    } catch (error) {
+        alert(error.message || 'Unable to cancel that booking.');
+    }
 }
 
 document.getElementById('searchInput').addEventListener('input', function(){ render(this.value); });
 
-render();
+(async function () {
+    var session = await TT.initPage({ requireAuth: true });
+    if (!session) return;
+    allBookings = await TT.bookings.mine();
+    render();
+})();
 </script>
 </body>
 </html>

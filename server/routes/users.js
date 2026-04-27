@@ -1,19 +1,31 @@
 const router = require('express').Router();
-const { readData } = require('../db');
+const { pool } = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
-const { presentUser } = require('../utils/domain');
 
-router.get('/', requireAuth, requireRole('admin'), async (_req, res, next) => {
-  try {
-    const data = await readData();
-    const users = data.users
-      .filter((entry) => entry.active)
-      .map((entry) => presentUser(data, entry));
+router.get('/', requireAuth, requireRole('admin'), async (req, res) => {
+  const [rows] = await pool.query(
+    `
+      SELECT
+        u.userID AS id,
+        CONCAT(u.fName, ' ', u.lName) AS name,
+        u.email,
+        r.roleName AS role,
+        u.active,
+        o.companyName
+      FROM Users u
+      INNER JOIN Role r ON r.roleID = u.roleID
+      LEFT JOIN Operator o ON o.userID = u.userID
+      ORDER BY u.createdAt ASC
+    `
+  );
 
-    return res.json(users);
-  } catch (error) {
-    return next(error);
-  }
+  res.json({
+    users: rows.map((row) => ({
+      ...row,
+      active: Boolean(row.active),
+      role: row.role.toLowerCase(),
+    })),
+  });
 });
 
 module.exports = router;

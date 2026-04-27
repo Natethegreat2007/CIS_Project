@@ -6,6 +6,7 @@
 <title>Tourist Tome - Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
 <style>
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     background-color: #1a4d2e;
@@ -15,6 +16,8 @@ body {
     color: #ffff00;
     min-height: 100vh;
 }
+
+
 nav {
     position: sticky; top: 0; z-index: 200;
     background: #0d3320;
@@ -23,19 +26,83 @@ nav {
     padding: 0 30px; height: 70px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
-.nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-right: 28px; flex-shrink: 0; }
+.nav-logo {
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none; margin-right: 28px; flex-shrink: 0;
+}
 .nav-logo img { height: 46px; width: auto; }
-.nav-logo span { font-size: 1.55rem; color: yellow; text-shadow: 2px 2px black; letter-spacing: 2px; }
+.nav-logo span {
+    font-family: 'Luckiest Guy';
+    font-size: 1.55rem; color: yellow;
+    text-shadow: 2px 2px black; letter-spacing: 2px;
+}
 .nav-links { display: flex; align-items: center; gap: 4px; }
-.nav-links a { color: rgba(255,255,0,0.6); text-decoration: none; font-size: 1rem; letter-spacing: 1px; padding: 8px 15px; border-radius: 10px; transition: 0.2s; }
-.nav-links a:hover, .nav-links a.active { color: yellow; background: rgba(255,255,0,0.12); }
+.nav-links a {
+    color: rgba(255,255,0,0.6);
+    text-decoration: none;
+    font-family: 'Luckiest Guy';
+    font-size: 1rem; letter-spacing: 1px;
+    padding: 8px 15px; border-radius: 10px;
+    transition: 0.2s;
+}
+.nav-links a:hover, .nav-links a.active {
+    color: yellow; background: rgba(255,255,0,0.12);
+}
 .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-.nav-user { background: rgba(255,255,0,0.12); border: 2px solid #fbc02d; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: yellow; letter-spacing: 1px; }
-.nav-logout { background: yellow; color: #1a4d2e; border: none; border-radius: 12px; padding: 8px 18px; font-family: 'Luckiest Guy'; font-size: 0.95rem; letter-spacing: 1px; cursor: pointer; box-shadow: 0 4px 0 #888800; transition: 0.1s; }
+.nav-search {
+    background: white; border-radius: 50px;
+    border: 3px solid black; padding: 5px 16px;
+    display: flex; align-items: center; gap: 6px;
+}
+.nav-search input {
+    border: none; outline: none;
+    font-family: 'Luckiest Guy'; font-size: 0.85rem;
+    width: 145px; color: #1a4d2e; background: transparent;
+}
+.nav-user {
+    background: rgba(255,255,0,0.12);
+    border: 2px solid #fbc02d; border-radius: 20px;
+    padding: 4px 14px; font-size: 0.8rem;
+    color: yellow; letter-spacing: 1px;
+}
+.nav-logout {
+    background: yellow; color: #1a4d2e;
+    border: none; border-radius: 12px;
+    padding: 8px 18px; font-family: 'Luckiest Guy';
+    font-size: 0.95rem; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 4px 0 #888800;
+    transition: 0.1s;
+}
 .nav-logout:hover { background: #eeee00; }
 .nav-logout:active { transform: translateY(3px); box-shadow: 0 1px 0 #888800; }
+
 .page-wrap { max-width: 1280px; margin: 0 auto; padding: 36px 40px; animation: fadeUp 0.3s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+.page-title { font-size: 60px; text-shadow: 4px 4px black; margin-bottom: 30px; letter-spacing: 2px; }
+.section-title { font-size: 36px; text-shadow: 3px 3px black; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,0,0.2); padding-bottom: 8px; }
+.back-nav { font-size: 45px; color: orange; cursor: pointer; display: inline-block; margin-bottom: 12px; text-decoration: none; transition: transform 0.2s; }
+.back-nav:hover { transform: translateX(-8px); }
+.input-field {
+    width: 100%; background: rgba(0,0,0,0.4); border: 3px solid #fbc02d;
+    border-radius: 20px; padding: 12px 18px; color: #ffff00;
+    font-family: 'Luckiest Guy'; font-size: 18px; outline: none;
+    box-sizing: border-box; transition: border-color 0.2s;
+}
+.input-field:focus { border-color: yellow; }
+.input-field::placeholder { color: rgba(255,255,0,0.4); }
+.input-field option { background: #1a4d2e; }
+.ybtn {
+    background: #cddc39; color: #1a4d2e; border: none;
+    border-radius: 14px; padding: 13px 30px;
+    font-family: 'Luckiest Guy'; font-size: 20px; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 5px 0 #689f38; transition: 0.1s;
+}
+.ybtn:hover { background: #ddef48; }
+.ybtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #689f38; }
+.alert { padding: 12px 18px; border-radius: 14px; font-size: 17px; margin-bottom: 16px; display: none; }
+.alert-ok  { background: rgba(205,220,57,0.12); border: 2px solid #cddc39; color: #cddc39; }
+.alert-err { background: rgba(255,82,82,0.12);  border: 2px solid #ff5252;  color: #ff5252; }
+
 .header-title { font-size: 60px; text-shadow: 4px 4px black; margin: 0 0 40px 0; letter-spacing: 2px; }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-bottom: 60px; }
 .stat-card { text-align: center; }
@@ -44,11 +111,9 @@ nav {
 .popular-tours-section { background: rgba(0,0,0,0.25); margin: 0 -40px; padding: 40px; }
 .section-title-dash { font-size: 45px; text-shadow: 3px 3px black; margin: 0 0 30px 40px; }
 .tour-circles-container { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
-.tour-card { text-align: center; max-width: 220px; }
-.tour-circle { width: 180px; height: 180px; border-radius: 50%; border: 5px solid #cddc39; overflow: hidden; background: black; box-shadow: 0 10px 20px rgba(0,0,0,0.5); margin: 0 auto 14px; }
+.tour-circle { width: 180px; height: 180px; border-radius: 50%; border: 5px solid #cddc39; overflow: hidden; background: black; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
 .tour-circle img { width: 100%; height: 100%; object-fit: cover; }
-.tour-name { color: yellow; font-size: 20px; text-shadow: 2px 2px black; }
-.tour-meta { color: rgba(255,255,255,0.65); font-size: 14px; margin-top: 4px; }
+
 </style>
 </head>
 <body>
@@ -77,17 +142,16 @@ nav {
   </div>
   <section class="popular-tours-section">
     <h2 class="section-title-dash">MOST POPULAR TOURS</h2>
-    <div class="tour-circles-container" id="popularTours"></div>
+    <div class="tour-circles-container" id="popularTours">
+      <div class="tour-circle"><img src="../images/bluehole.jpg" alt="Tour"></div>
+    </div>
   </section>
 </div>
-
 <script src="tt-data.js"></script>
 <script>
-TT.auth.require('admin');
-
 function countUp(id, target) {
   var el = document.getElementById(id);
-  var step = Math.max(1, Math.ceil(target / 60));
+  var step = Math.ceil(target / 60);
   var c = 0;
   var t = setInterval(function(){
     c = Math.min(c + step, target);
@@ -96,26 +160,21 @@ function countUp(id, target) {
   }, 16);
 }
 
-function renderDashboard() {
-  var data = TT.analytics.dashboard();
-  if (!data) {
-    document.getElementById('popularTours').innerHTML = '<div style="color:rgba(255,255,0,0.4);">Unable to load dashboard data.</div>';
-    return;
-  }
+(async function () {
+  var session = await TT.initPage({ requireAuth: true, roles: ['admin'] });
+  if (!session) return;
 
-  countUp('statUsers', data.totalUsers || 0);
-  countUp('statBookings', data.totalBookings || 0);
+  var data = await TT.analytics.dashboard();
+  countUp('statUsers', data.stats.totalUsers);
+  countUp('statBookings', data.stats.totalBookings);
 
-  document.getElementById('popularTours').innerHTML = (data.popularTours || []).map(function(tour) {
-    return '<div class="tour-card">' +
-      '<div class="tour-circle"><img src="' + tour.img + '" alt="' + tour.name + '"></div>' +
-      '<div class="tour-name">' + tour.name + '</div>' +
-      '<div class="tour-meta">' + (tour.bookings || 0) + ' booked seats</div>' +
-      '</div>';
-  }).join('');
-}
-
-renderDashboard();
+  var wrap = document.getElementById('popularTours');
+  wrap.innerHTML = (data.popularTours || []).map(function (tour) {
+    return '<div class="tour-circle" title="' + tour.name + ' (' + tour.bookings + ' bookings)">' +
+      '<img src="' + tour.img + '" alt="' + tour.name + '" onerror="this.style.opacity=0">' +
+    '</div>';
+  }).join('') || '<p style="color:rgba(255,255,0,0.35);">No booking data yet.</p>';
+})();
 </script>
 </body>
 </html>

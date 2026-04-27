@@ -1,190 +1,241 @@
-const router = require('express').Router();
 const argon2 = require('argon2');
-const rateLimit = require('express-rate-limit');
-const { readData, updateData } = require('../db');
-const { issueToken, requireAuth } = require('../middleware/auth');
-const { presentUser } = require('../utils/domain');
+const crypto = require('crypto');
+const router = require('express').Router();
+const { pool } = require('../db');
+const { findUserById, requireAuth, signToken } = require('../middleware/auth');
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+function splitName(fullName = '') {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) {
+    return { firstName: 'Guest', lastName: 'User' };
+  }
 
-function normalizeEmail(email) {
-  return String(email || '').trim().toLowerCase();
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: 'User' };
+  }
+
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(' '),
+  };
 }
 
-router.post('/register', async (req, res, next) => {
+async function getRoleId(connection, roleName) {
+  const normalized = `${roleName}`.trim().toLowerCase();
+  const lookup = {
+    admin: 'Admin',
+    operator: 'Operator',
+    tourist: 'Tourist',
+  };
+
+  const [rows] = await connection.query(
+    'SELECT roleID FROM Role WHERE roleName = ? LIMIT 1',
+    [lookup[normalized] || 'Tourist']
+  );
+
+  return rows[0]?.roleID || 3;
+}
+
+async function getNationalityId(connection, nationality) {
+  if (!nationality) {
+    return null;
+  }
+
+  await connection.query(
+    `
+      INSERT INTO Nationality (cName)
+      VALUES (?)
+      ON DUPLICATE KEY UPDATE cName = VALUES(cName)
+    `,
+    [nationality]
+  );
+
+  const [rows] = await connection.query(
+    'SELECT natID FROM Nationality WHERE cName = ? LIMIT 1',
+    [nationality]
+  );
+
+  return rows[0]?.natID || null;
+}
+
+router.post('/login', async (req, res) => {
+  const email = `${req.body.email || ''}`.trim().toLowerCase();
+  const password = `${req.body.password || ''}`;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required.' });
+  }
+
+  const [rows] = await pool.query(
+    `
+      SELECT userID, email, passwordHash, active
+      FROM Users
+      WHERE email = ?
+      LIMIT 1
+    `,
+    [email]
+  );
+
+  const userRow = rows[0];
+  if (!userRow) {
+    return res.status(401).json({ error: 'Wrong email or password.' });
+  }
+
+  if (!userRow.active) {
+    return res.status(403).json({ error: 'This account is inactive.' });
+  }
+
+  const validPassword = await argon2.verify(userRow.passwordHash, password).catch(() => false);
+  if (!validPassword) {
+    return res.status(401).json({ error: 'Wrong email or password.' });
+  }
+
+  const user = await findUserById(userRow.userID);
+  const token = signToken(user);
+  return res.json({ token, user });
+});
+
+router.post('/register', async (req, res) => {
+  const {
+    email,
+    password,
+    firstName,
+    lastName,
+    role = 'tourist',
+    nationality,
+    companyName,
+    contactPhone,
+    businessEmail,
+  } = req.body;
+
+  if (!email || !password || !firstName || !lastName) {
+    return res.status(400).json({ error: 'First name, last name, email, and password are required.' });
+  }
+
+  if (String(password).length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+  }
+
+  const normalizedRole = `${role}`.trim().toLowerCase();
+  if (!['admin', 'operator', 'tourist'].includes(normalizedRole)) {
+    return res.status(400).json({ error: 'Invalid role selected.' });
+  }
+
+  if (normalizedRole === 'operator' && !companyName) {
+    return res.status(400).json({ error: 'Company name is required for operators.' });
+  }
+
+  const normalizedEmail = `${email}`.trim().toLowerCase();
+  const connection = await pool.getConnection();
+
   try {
-    const {
-      email,
-      password,
-      firstName,
-      lastName,
-      role = 'tourist',
-      nationality,
-      companyName,
-      businessEmail,
-      phoneNum,
-    } = req.body;
+    await connection.beginTransaction();
 
-    if (!email || !password || !firstName || !lastName) {
-      return res.status(400).json({ error: 'First name, last name, email, and password are required.' });
+    const [existing] = await connection.query(
+      'SELECT userID FROM Users WHERE email = ? LIMIT 1',
+      [normalizedEmail]
+    );
+
+    if (existing[0]) {
+      await connection.rollback();
+      return res.status(409).json({ error: 'That email is already registered.' });
     }
 
-    if (String(password).length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+    const passwordHash = await argon2.hash(password);
+    const roleId = await getRoleId(connection, normalizedRole);
+    const natId = await getNationalityId(connection, nationality);
+
+    const [userResult] = await connection.query(
+      `
+        INSERT INTO Users (email, passwordHash, fName, lName, roleID, natID)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `,
+      [normalizedEmail, passwordHash, firstName.trim(), lastName.trim(), roleId, natId]
+    );
+
+    if (normalizedRole === 'operator') {
+      await connection.query(
+        `
+          INSERT INTO Operator (userID, companyName, contactEmail, phoneNum)
+          VALUES (?, ?, ?, ?)
+        `,
+        [
+          userResult.insertId,
+          companyName.trim(),
+          (businessEmail || normalizedEmail).trim().toLowerCase(),
+          contactPhone ? contactPhone.trim() : null,
+        ]
+      );
     }
 
-    if (!['tourist', 'operator', 'admin'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid account type.' });
-    }
+    await connection.commit();
 
-    if (role === 'operator' && !companyName) {
-      return res.status(400).json({ error: 'Operators must provide a company name.' });
-    }
-
-    const normalizedEmail = normalizeEmail(email);
-    const normalizedBusinessEmail = normalizeEmail(businessEmail || email);
-    const passwordHash = await argon2.hash(String(password));
-    const createdAt = new Date().toISOString();
-
-    const result = await updateData(async (data, helpers) => {
-      if (data.users.some((entry) => entry.email.toLowerCase() === normalizedEmail)) {
-        return { error: 'That email is already registered.', status: 409 };
-      }
-
-      const user = {
-        id: helpers.nextId(data.users),
-        email: normalizedEmail,
-        passwordHash,
-        firstName: String(firstName).trim(),
-        lastName: String(lastName).trim(),
-        role,
-        nationality: nationality ? String(nationality).trim() : '',
-        active: true,
-        createdAt,
-        updatedAt: createdAt,
-        operatorId: null,
-      };
-
-      data.users.push(user);
-
-      if (role === 'operator') {
-        const operator = {
-          id: helpers.nextId(data.operators),
-          userId: user.id,
-          companyName: String(companyName).trim(),
-          contactEmail: normalizedBusinessEmail,
-          phoneNum: phoneNum ? String(phoneNum).trim() : '',
-        };
-        data.operators.push(operator);
-        user.operatorId = operator.id;
-      }
-
-      return { userId: user.id };
-    });
-
-    if (result.error) {
-      return res.status(result.status).json({ error: result.error });
-    }
-
-    const data = await readData();
-    const user = data.users.find((entry) => entry.id === result.userId);
-    const token = issueToken(user);
-
-    return res.status(201).json({
-      token,
-      user: presentUser(data, user),
-    });
+    const user = await findUserById(userResult.insertId);
+    const token = signToken(user);
+    return res.status(201).json({ token, user });
   } catch (error) {
-    return next(error);
+    await connection.rollback();
+
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'That email or company is already registered.' });
+    }
+
+    throw error;
+  } finally {
+    connection.release();
   }
 });
 
-router.post('/login', loginLimiter, async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const normalizedEmail = normalizeEmail(email);
-    const data = await readData();
-    const user = data.users.find((entry) => entry.email.toLowerCase() === normalizedEmail);
+router.post('/google', async (req, res) => {
+  const email = `${req.body.email || ''}`.trim().toLowerCase();
+  const role = `${req.body.role || 'tourist'}`.trim().toLowerCase();
+  const fullName = `${req.body.name || 'Google User'}`;
 
-    if (!user || !user.active) {
-      return res.status(401).json({ error: 'Wrong email or password.' });
-    }
-
-    const matches = await argon2.verify(user.passwordHash, String(password || ''));
-    if (!matches) {
-      return res.status(401).json({ error: 'Wrong email or password.' });
-    }
-
-    return res.json({
-      token: issueToken(user),
-      user: presentUser(data, user),
-    });
-  } catch (error) {
-    return next(error);
+  if (!email) {
+    return res.status(400).json({ error: 'Google login requires an email address.' });
   }
+
+  const [existing] = await pool.query(
+    'SELECT userID FROM Users WHERE email = ? LIMIT 1',
+    [email]
+  );
+
+  let userId = existing[0]?.userID || null;
+
+  if (!userId) {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const { firstName, lastName } = splitName(fullName);
+      const roleId = await getRoleId(connection, role === 'operator' ? 'tourist' : role);
+      const passwordHash = await argon2.hash(`google:${email}:${crypto.randomUUID()}`);
+
+      const [result] = await connection.query(
+        `
+          INSERT INTO Users (email, passwordHash, fName, lName, roleID, natID)
+          VALUES (?, ?, ?, ?, ?, NULL)
+        `,
+        [email, passwordHash, firstName, lastName, roleId]
+      );
+
+      userId = result.insertId;
+      await connection.commit();
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  const user = await findUserById(userId);
+  const token = signToken(user);
+  return res.json({ token, user });
 });
 
-router.post('/google', async (req, res, next) => {
-  try {
-    const { email, name } = req.body;
-    const normalizedEmail = normalizeEmail(email);
-
-    if (!normalizedEmail || !name) {
-      return res.status(400).json({ error: 'Google sign-in requires a valid name and email.' });
-    }
-
-    let createdUserId = null;
-
-    await updateData(async (data, helpers) => {
-      let user = data.users.find((entry) => entry.email.toLowerCase() === normalizedEmail);
-      if (!user) {
-        const parts = String(name).trim().split(/\s+/);
-        const firstName = parts.shift() || 'Google';
-        const lastName = parts.join(' ') || 'User';
-
-        user = {
-          id: helpers.nextId(data.users),
-          email: normalizedEmail,
-          passwordHash: await argon2.hash(`google-${Date.now()}`),
-          firstName,
-          lastName,
-          role: 'tourist',
-          nationality: '',
-          active: true,
-          createdAt: helpers.nowIso(),
-          updatedAt: helpers.nowIso(),
-          operatorId: null,
-        };
-        data.users.push(user);
-      }
-
-      createdUserId = user.id;
-    });
-
-    const data = await readData();
-    const user = data.users.find((entry) => entry.id === createdUserId);
-    return res.json({
-      token: issueToken(user),
-      user: presentUser(data, user),
-    });
-  } catch (error) {
-    return next(error);
-  }
-});
-
-router.get('/me', requireAuth, async (req, res, next) => {
-  try {
-    const data = await readData();
-    const user = data.users.find((entry) => entry.id === req.user.id);
-    return res.json({ user: presentUser(data, user) });
-  } catch (error) {
-    return next(error);
-  }
+router.get('/me', requireAuth, async (req, res) => {
+  res.json({ user: req.user });
 });
 
 module.exports = router;
