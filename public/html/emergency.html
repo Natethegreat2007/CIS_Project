@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tourist Tome - Emergency Services</title>
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #1a4d2e;
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(251,192,45,0.16), transparent 42%),
+        radial-gradient(circle at 85% 45%, rgba(205,220,57,0.16), transparent 45%),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+      background-size: auto, auto, 40px 100%;
+      font-family: 'Luckiest Guy', cursive;
+      color: #ffff00;
+      min-height: 100vh;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(13,51,32,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 4px solid #fbc02d;
+      display: flex; align-items: center;
+      padding: 0 26px; height: 74px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nav-logo img { height: 46px; width: auto; }
+    .nav-logo span { font-size: 1.5rem; color: yellow; text-shadow: 2px 2px black; letter-spacing: 2px; }
+    .nav-links { margin-left: 24px; display: flex; gap: 6px; align-items: center; }
+    .nav-links a {
+      color: rgba(255,255,0,0.7); text-decoration: none;
+      font-size: 1rem; letter-spacing: 1px;
+      padding: 8px 14px; border-radius: 10px; transition: 0.18s;
+    }
+    .nav-links a:hover, .nav-links a.active { background: rgba(255,255,0,0.12); color: yellow; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .nav-user {
+      background: rgba(255,255,0,0.12);
+      border: 2px solid #fbc02d; border-radius: 20px;
+      padding: 4px 14px; font-size: 0.85rem; color: yellow; letter-spacing: 1px;
+      display: none;
+    }
+    .pill {
+      border: 2px solid rgba(251,192,45,0.65);
+      background: rgba(0,0,0,0.15);
+      color: rgba(255,255,0,0.85);
+      padding: 8px 14px; border-radius: 999px;
+      font-family: 'Luckiest Guy', cursive;
+      cursor: pointer; letter-spacing: 1px;
+      transition: 0.15s;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .pill:hover { border-color: #fbc02d; background: rgba(251,192,45,0.12); color: yellow; }
+    .pill.primary {
+      background: #fbc02d; color: #1a4d2e;
+      border-color: black;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+    }
+    .pill.primary:hover { background: #ffcf4c; }
+    .pill.primary:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 30px 26px 60px; }
+    .title { font-size: clamp(40px, 5vw, 62px); text-shadow: 5px 5px black; margin-bottom: 8px; }
+    .subtitle {
+      color: rgba(255,255,255,0.7);
+      font-family: Arial, sans-serif;
+      line-height: 1.55;
+      margin-bottom: 18px;
+      max-width: 900px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 18px 0 16px;
+    }
+    .select {
+      background: rgba(0,0,0,0.25);
+      border: 2px solid rgba(251,192,45,0.5);
+      color: #ffff00;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-family: 'Luckiest Guy', cursive;
+      font-size: 16px;
+      outline: none;
+    }
+    .select option { background: #1a4d2e; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .card {
+      background: rgba(0,0,0,0.22);
+      border: 2px solid rgba(251,192,45,0.25);
+      border-radius: 16px;
+      padding: 14px;
+      transition: 0.18s;
+    }
+    .card:hover { transform: translateY(-3px); border-color: rgba(251,192,45,0.55); }
+    .card h3 { font-size: 22px; text-shadow: 2px 2px black; margin-bottom: 8px; color: yellow; }
+    .meta { color: rgba(255,255,255,0.72); font-family: Arial, sans-serif; font-size: 13px; line-height: 1.45; }
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(205,220,57,0.6);
+      background: rgba(205,220,57,0.12);
+      color: #cddc39;
+      font-size: 11px;
+      letter-spacing: 1px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .btn {
+      background: #cddc39;
+      color: #1a4d2e;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-family: 'Luckiest Guy', cursive;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 rgba(104,159,56,0.9);
+      transition: 0.1s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 120px;
+    }
+    .btn:hover { background: #ddef48; }
+    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(104,159,56,0.9); }
+    .btn.secondary {
+      background: rgba(251,192,45,0.12);
+      border: 2px solid rgba(251,192,45,0.65);
+      color: yellow;
+      box-shadow: none;
+    }
+    .btn.secondary:hover { background: rgba(251,192,45,0.18); }
+
+    .section-title {
+      margin-top: 26px;
+      font-size: 34px;
+      text-shadow: 3px 3px black;
+      border-bottom: 2px solid rgba(255,255,0,0.18);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+    .note {
+      margin-top: 18px;
+      border: 2px solid rgba(255,82,82,0.7);
+      background: rgba(255,82,82,0.12);
+      color: rgba(255,255,255,0.9);
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 12px 14px;
+      border-radius: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="landing.html">
+      <img src="../images/logo.png" alt="Tourist Tome" />
+      <span>TOURIST TOME</span>
+    </a>
+    <div class="nav-links">
+      <a href="landing.html">PLATFORM</a>
+      <a class="active" href="emergency.html">SAFETY</a>
+    </div>
+    <div class="nav-right">
+      <span class="nav-user" id="navUser"></span>
+      <a class="pill" id="navLogin" href="login.html">LOGIN</a>
+      <a class="pill primary" id="navRegister" href="register.html">GET STARTED</a>
+      <button class="pill" id="navLogout" style="display:none;">LOGOUT</button>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <h1 class="title">EMERGENCY SERVICES</h1>
+    <p class="subtitle">
+      Quick access to emergency hotlines, Belize Police Department, Tourist Police Unit, and a district-based list of medical facilities.
+      If this is an emergency, call <strong>911</strong> immediately.
+    </p>
+
+    <div class="toolbar">
+      <label for="districtSelect" style="font-size:18px;">District</label>
+      <select class="select" id="districtSelect" aria-label="District">
+        <option value="">All districts</option>
+      </select>
+      <button class="btn secondary" id="refreshBtn" type="button">REFRESH</button>
+    </div>
+
+    <div class="section-title">HOTLINES</div>
+    <div class="grid" id="hotlinesGrid"></div>
+
+    <div class="section-title">AGENCIES</div>
+    <div class="grid" id="agenciesGrid"></div>
+
+    <div class="section-title">MEDICAL FACILITIES</div>
+    <div class="grid" id="medicalGrid"></div>
+
+    <div class="note" id="disclaimerBox" style="display:none;"></div>
+  </main>
+
+  <script src="tt-data.js"></script>
+  <script>
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function cardHtml(row, tagText, extraMeta) {
+      var phoneLine = row.phone ? ('<div class="meta"><strong>Phone:</strong> ' + escapeHtml(row.phone) + '</div>') : '';
+      var scopeLine = row.scope ? ('<div class="meta"><strong>Scope:</strong> ' + escapeHtml(row.scope) + '</div>') : '';
+      var districtLine = row.district ? ('<div class="meta"><strong>District:</strong> ' + escapeHtml(row.district) + '</div>') : '';
+      var typeLine = row.type ? ('<div class="meta"><strong>Type:</strong> ' + escapeHtml(row.type) + '</div>') : '';
+      var descLine = row.description ? ('<div class="meta">' + escapeHtml(row.description) + '</div>') : '';
+      var extraLine = extraMeta ? ('<div class="meta">' + escapeHtml(extraMeta) + '</div>') : '';
+
+      var callBtn = row.tel
+        ? ('<a class="btn" href="' + escapeHtml(row.tel) + '">CALL</a>')
+        : ('<button class="btn" type="button" onclick="alert(\'No direct number listed here. In an emergency, dial 911.\')">CALL</button>');
+
+      return (
+        '<div class="card">' +
+          '<h3>' + escapeHtml(row.name) + '</h3>' +
+          (tagText ? '<div class="tag">' + escapeHtml(tagText) + '</div>' : '') +
+          descLine +
+          scopeLine +
+          districtLine +
+          typeLine +
+          phoneLine +
+          extraLine +
+          '<div class="actions">' +
+            callBtn +
+            '<button class="btn secondary" type="button" onclick="navigator.clipboard && navigator.clipboard.writeText(' +
+              '\'' + escapeHtml(row.phone || '911') + '\').then(function(){ alert(\'Copied\'); }).catch(function(){ alert(\'Copy not available\'); })' +
+            '">COPY</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }
+
+    function renderSection(elId, rows, tag, emptyText) {
+      var el = document.getElementById(elId);
+      if (!rows || !rows.length) {
+        el.innerHTML = '<div class="card"><h3>' + escapeHtml(emptyText) + '</h3><div class="meta">Try another district filter.</div></div>';
+        return;
+      }
+      el.innerHTML = rows.map(function (row) { return cardHtml(row, tag); }).join('');
+    }
+
+    async function loadDirectory() {
+      var district = document.getElementById('districtSelect').value;
+      var payload = await TT.emergency.directory(district);
+
+      var select = document.getElementById('districtSelect');
+      if (select.options.length <= 1 && payload.districts && payload.districts.length) {
+        payload.districts.forEach(function (d) {
+          var opt = document.createElement('option');
+          opt.value = d;
+          opt.textContent = d;
+          select.appendChild(opt);
+        });
+      }
+
+      renderSection('hotlinesGrid', payload.hotlines, 'EMERGENCY', 'No hotlines found');
+      renderSection('agenciesGrid', payload.agencies, 'SAFETY', 'No agencies found');
+      renderSection('medicalGrid', payload.medicalFacilities, 'MEDICAL', 'No facilities found');
+
+      var box = document.getElementById('disclaimerBox');
+      if (payload.disclaimer) {
+        box.textContent = payload.disclaimer;
+        box.style.display = 'block';
+      }
+    }
+
+    (async function () {
+      await TT.initPage({ requireAuth: false });
+      var s = TT.auth.session();
+      var userEl = document.getElementById('navUser');
+      var loginEl = document.getElementById('navLogin');
+      var regEl = document.getElementById('navRegister');
+      var logoutEl = document.getElementById('navLogout');
+
+      if (s && s.name && logoutEl) {
+        userEl.style.display = 'inline-flex';
+        userEl.textContent = s.name.split(' ')[0].toUpperCase();
+        logoutEl.style.display = 'inline-flex';
+        loginEl.style.display = 'none';
+        regEl.style.display = 'none';
+        logoutEl.onclick = function () { TT.auth.logout(); };
+      }
+
+      document.getElementById('districtSelect').addEventListener('change', loadDirectory);
+      document.getElementById('refreshBtn').addEventListener('click', loadDirectory);
+
+      try {
+        await loadDirectory();
+      } catch (e) {
+        document.getElementById('hotlinesGrid').innerHTML =
+          '<div class="card"><h3>Unable to load directory</h3><div class="meta">' + escapeHtml(e.message || 'Request failed') + '</div></div>';
+      }
+    })();
+  </script>
+</body>
+</html>
+

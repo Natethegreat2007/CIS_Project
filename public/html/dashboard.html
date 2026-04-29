@@ -104,15 +104,73 @@ nav {
 .alert-err { background: rgba(255,82,82,0.12);  border: 2px solid #ff5252;  color: #ff5252; }
 
 .header-title { font-size: 60px; text-shadow: 4px 4px black; margin: 0 0 40px 0; letter-spacing: 2px; }
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-bottom: 60px; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
 .stat-card { text-align: center; }
 .stat-label { color: black; font-size: 32px; margin-bottom: 14px; display: block; }
-.stat-value { background: #cddc39; color: #1a4d2e; border: 4px solid black; border-radius: 20px; padding: 40px; font-size: 50px; box-shadow: 0 8px 0 rgba(0,0,0,0.2); }
-.popular-tours-section { background: rgba(0,0,0,0.25); margin: 0 -40px; padding: 40px; }
+.stat-value { background: #cddc39; color: #1a4d2e; border: 4px solid black; border-radius: 20px; padding: 28px; font-size: 40px; box-shadow: 0 8px 0 rgba(0,0,0,0.2); }
+.popular-tours-section { background: rgba(0,0,0,0.25); margin: 0 -40px; padding: 30px 40px; }
 .section-title-dash { font-size: 45px; text-shadow: 3px 3px black; margin: 0 0 30px 40px; }
 .tour-circles-container { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
 .tour-circle { width: 180px; height: 180px; border-radius: 50%; border: 5px solid #cddc39; overflow: hidden; background: black; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
 .tour-circle img { width: 100%; height: 100%; object-fit: cover; }
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.panel {
+  background: rgba(0,0,0,0.3);
+  border: 3px solid rgba(251,192,45,0.35);
+  border-radius: 16px;
+  padding: 16px;
+}
+.panel h3 {
+  margin-bottom: 10px;
+  font-size: 24px;
+  color: #cddc39;
+}
+.line-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(251,192,45,0.18);
+  padding: 8px 0;
+  font-size: 16px;
+}
+.line-row:last-child { border-bottom: none; }
+.highlight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.highlight-card {
+  background: rgba(205,220,57,0.15);
+  border: 3px solid #cddc39;
+  border-radius: 14px;
+  padding: 14px;
+}
+.highlight-title { color: #1a4d2e; font-size: 18px; }
+.highlight-value { color: #ffff00; font-size: 26px; text-shadow: 2px 2px black; margin-top: 6px; }
+.chart-row { margin-top: 8px; }
+.chart-bar-wrap {
+  display: grid;
+  grid-template-columns: 90px 1fr 54px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.chart-bar {
+  height: 14px;
+  border-radius: 8px;
+  background: rgba(251,192,45,0.2);
+  overflow: hidden;
+}
+.chart-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #cddc39, #fbc02d);
+}
 
 </style>
 </head>
@@ -139,7 +197,50 @@ nav {
       <span class="stat-label">TOTAL BOOKINGS</span>
       <div class="stat-value" id="statBookings">0</div>
     </div>
+    <div class="stat-card">
+      <span class="stat-label">ACTIVE TOURS</span>
+      <div class="stat-value" id="statTours">0</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">ATTRACTIONS</span>
+      <div class="stat-value" id="statAttractions">0</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">EST. REVENUE</span>
+      <div class="stat-value" id="statRevenue">$0</div>
+    </div>
   </div>
+
+  <div class="highlight-grid">
+    <div class="highlight-card">
+      <div class="highlight-title">Most Popular Attraction</div>
+      <div class="highlight-value" id="topAttraction">No data yet</div>
+    </div>
+    <div class="highlight-card">
+      <div class="highlight-title">Most Booked Tour</div>
+      <div class="highlight-value" id="topTour">No data yet</div>
+    </div>
+  </div>
+
+  <div class="analytics-grid">
+    <section class="panel">
+      <h3>Best Tour Operators</h3>
+      <div id="bestOperators"></div>
+    </section>
+    <section class="panel">
+      <h3>Frequent Tourist Nationalities</h3>
+      <div id="topNationalities"></div>
+    </section>
+    <section class="panel">
+      <h3>Booking Status</h3>
+      <div id="bookingStatus"></div>
+    </section>
+    <section class="panel">
+      <h3>Monthly Booking Trend</h3>
+      <div class="chart-row" id="monthlyTrend"></div>
+    </section>
+  </div>
+
   <section class="popular-tours-section">
     <h2 class="section-title-dash">MOST POPULAR TOURS</h2>
     <div class="tour-circles-container" id="popularTours">
@@ -160,6 +261,36 @@ function countUp(id, target) {
   }, 16);
 }
 
+function renderRankRows(id, rows, formatter) {
+  var el = document.getElementById(id);
+  if (!rows || !rows.length) {
+    el.innerHTML = '<p style="color:rgba(255,255,0,0.35);">No data yet.</p>';
+    return;
+  }
+
+  el.innerHTML = rows.map(function(row, idx) {
+    return '<div class="line-row"><span>' + (idx + 1) + '. ' + formatter.left(row) + '</span><span>' + formatter.right(row) + '</span></div>';
+  }).join('');
+}
+
+function renderMonthlyBars(rows) {
+  var wrap = document.getElementById('monthlyTrend');
+  if (!rows || !rows.length) {
+    wrap.innerHTML = '<p style="color:rgba(255,255,0,0.35);">No trend data yet.</p>';
+    return;
+  }
+  var max = rows.reduce(function(m, item){ return Math.max(m, item.bookings); }, 0) || 1;
+  wrap.innerHTML = rows.map(function(item) {
+    var label = item.month.slice(2);
+    var width = Math.max(8, Math.round((item.bookings / max) * 100));
+    return '<div class="chart-bar-wrap">' +
+      '<span>' + label + '</span>' +
+      '<div class="chart-bar"><div class="chart-fill" style="width:' + width + '%;"></div></div>' +
+      '<span>' + item.bookings + '</span>' +
+    '</div>';
+  }).join('');
+}
+
 (async function () {
   var session = await TT.initPage({ requireAuth: true, roles: ['admin'] });
   if (!session) return;
@@ -167,6 +298,31 @@ function countUp(id, target) {
   var data = await TT.analytics.dashboard();
   countUp('statUsers', data.stats.totalUsers);
   countUp('statBookings', data.stats.totalBookings);
+  countUp('statTours', data.stats.totalTours);
+  countUp('statAttractions', data.stats.totalAttractions);
+  document.getElementById('statRevenue').textContent = '$' + Number(data.stats.totalRevenue || 0).toFixed(2);
+
+  var topAttraction = data.highlights && data.highlights.topAttraction;
+  var topTour = data.highlights && data.highlights.topTour;
+  document.getElementById('topAttraction').textContent = topAttraction ? (topAttraction.name + ' (' + topAttraction.bookings + ' bookings)') : 'No data yet';
+  document.getElementById('topTour').textContent = topTour ? (topTour.name + ' (' + topTour.bookings + ' bookings)') : 'No data yet';
+
+  renderRankRows('bestOperators', data.bestOperators || [], {
+    left: function(row) { return row.name; },
+    right: function(row) { return row.bookings + ' bookings · $' + row.revenue.toFixed(2); },
+  });
+
+  renderRankRows('topNationalities', data.frequentNationalities || [], {
+    left: function(row) { return row.country; },
+    right: function(row) { return row.bookings + ' bookings · ' + row.users + ' users'; },
+  });
+
+  renderRankRows('bookingStatus', data.bookingStatusBreakdown || [], {
+    left: function(row) { return row.status; },
+    right: function(row) { return row.total; },
+  });
+
+  renderMonthlyBars(data.monthlyBookings || []);
 
   var wrap = document.getElementById('popularTours');
   wrap.innerHTML = (data.popularTours || []).map(function (tour) {

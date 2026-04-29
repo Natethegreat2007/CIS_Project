@@ -122,6 +122,40 @@ nav {
 .action-row { display: flex; gap: 16px; margin-top: 10px; }
 .cancel-btn { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); border: 2px solid rgba(255,255,255,0.2); border-radius: 14px; padding: 13px 28px; font-family: 'Luckiest Guy'; font-size: 20px; cursor: pointer; transition: 0.15s; }
 .cancel-btn:hover { background: rgba(255,255,255,0.18); }
+.date-picker-row { display: flex; gap: 10px; align-items: center; }
+.date-add-btn {
+  background: rgba(251,192,45,0.15);
+  color: #fbc02d;
+  border: 2px solid #fbc02d;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-family: 'Luckiest Guy';
+  cursor: pointer;
+}
+.date-list {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.date-chip {
+  background: rgba(205,220,57,0.16);
+  border: 2px solid #cddc39;
+  color: #cddc39;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 14px;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+.date-chip button {
+  border: none;
+  background: transparent;
+  color: #cddc39;
+  font-family: 'Luckiest Guy';
+  cursor: pointer;
+}
 
 </style>
 </head>
@@ -159,6 +193,14 @@ nav {
       <div class="input-group"><label>Tour Name:</label><input type="text" class="input-field" id="tourName" placeholder="Enter.."></div>
       <div class="input-group"><label>Tour Description:</label><textarea class="input-field" id="tourDesc" placeholder="Enter.." style="min-height:110px;resize:vertical;"></textarea></div>
       <div class="input-group"><label>Max Capacity:</label><input type="number" class="input-field" id="tourCap" placeholder="Enter.."></div>
+      <div class="input-group">
+        <label>Available Dates:</label>
+        <div class="date-picker-row">
+          <input type="date" class="input-field" id="tourDateInput" style="font-size:16px;padding:10px 14px;">
+          <button class="date-add-btn" type="button" onclick="addAvailableDate()">ADD DATE</button>
+        </div>
+        <div class="date-list" id="dateList"></div>
+      </div>
     </div>
     <div class="upload-section">
       <div class="upload-title">Upload Images</div>
@@ -183,6 +225,7 @@ nav {
 <script>
 var editingTourId = null;
 var currentTours = [];
+var selectedDates = [];
 
 document.getElementById('fileInput').addEventListener('change', function() {
   var f = this.files[0];
@@ -212,6 +255,36 @@ function renderTourList() {
   }).join('');
 }
 
+function renderDateList() {
+  var wrap = document.getElementById('dateList');
+  if (!selectedDates.length) {
+    wrap.innerHTML = '<span style="color:rgba(255,255,0,0.45);font-size:14px;">No dates selected yet.</span>';
+    return;
+  }
+
+  wrap.innerHTML = selectedDates.map(function(date) {
+    return '<span class="date-chip">' + date +
+      ' <button type="button" onclick="removeAvailableDate(\'' + date + '\')">x</button></span>';
+  }).join('');
+}
+
+function addAvailableDate() {
+  var input = document.getElementById('tourDateInput');
+  var value = input.value;
+  if (!value) return;
+  if (selectedDates.indexOf(value) === -1) {
+    selectedDates.push(value);
+    selectedDates.sort();
+    renderDateList();
+  }
+  input.value = '';
+}
+
+function removeAvailableDate(date) {
+  selectedDates = selectedDates.filter(function(item) { return item !== date; });
+  renderDateList();
+}
+
 function editTour(id) {
   var tour = currentTours.find(function(item) { return item.id === id; });
   if (!tour) return;
@@ -236,6 +309,10 @@ async function saveTour() {
   var n = document.getElementById('tourName').value.trim();
   var a = document.getElementById('tourAttr').value;
   if (!n || !a) { alert('Tour name and linked attraction are required.'); return; }
+  if (!editingTourId && !selectedDates.length) {
+    alert('Please add at least one available date for new tours.');
+    return;
+  }
 
   try {
     await TT.tours.save({
@@ -247,7 +324,8 @@ async function saveTour() {
       price: Number(document.getElementById('tourPrice').value),
       cap: Number(document.getElementById('tourCap').value),
       location: document.getElementById('tourLoc').value.trim(),
-      imagePath: document.getElementById('imagePreview').style.display === 'block' ? document.getElementById('imagePreview').src : null
+      imagePath: document.getElementById('imagePreview').style.display === 'block' ? document.getElementById('imagePreview').src : null,
+      availableDates: selectedDates.slice()
     });
 
     var al = document.getElementById('saveAlert');
@@ -270,11 +348,15 @@ function resetForm() {
   document.getElementById('imagePreview').style.display = 'none';
   document.querySelector('.camera-icon').style.display = 'flex';
   document.getElementById('fileInput').value = '';
+  document.getElementById('tourDateInput').value = '';
+  selectedDates = [];
+  renderDateList();
 }
 
 (async function () {
   var session = await TT.initPage({ requireAuth: true, roles: ['operator', 'admin'] });
   if (!session) return;
+  document.getElementById('tourDateInput').setAttribute('min', new Date().toISOString().slice(0, 10));
 
   var attractions = await TT.attractions.all();
   var attrSelect = document.getElementById('tourAttr');
@@ -284,6 +366,7 @@ function resetForm() {
 
   currentTours = session.role === 'admin' ? await TT.tours.all() : await TT.operators.mineTours();
   renderTourList();
+  renderDateList();
 })();
 </script>
 </body>

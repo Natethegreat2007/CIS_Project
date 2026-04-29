@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const { pool } = require('../db');
-const { ensureAvailabilityForDate } = require('../lib/availability');
 const { mapBooking } = require('../lib/catalog');
 const { getSeasonMultiplier } = require('../lib/pricing');
 const { requireAuth } = require('../middleware/auth');
@@ -18,6 +17,8 @@ async function fetchBookingById(connection, bookingId) {
         b.tourDate AS tourDate,
         b.personCount AS personCount,
         p.method AS paymentMethod,
+        p.success AS paymentSuccess,
+        p.date AS paymentDate,
         b.price AS total,
         b.seasonLabel AS season,
         b.status AS status,
@@ -48,6 +49,8 @@ router.get('/mine', requireAuth, async (req, res) => {
         b.tourDate AS tourDate,
         b.personCount AS personCount,
         p.method AS paymentMethod,
+        p.success AS paymentSuccess,
+        p.date AS paymentDate,
         b.price AS total,
         b.seasonLabel AS season,
         b.status AS status,
@@ -106,12 +109,6 @@ router.post('/', requireAuth, async (req, res) => {
       await connection.rollback();
       return res.status(400).json({ error: 'Party size exceeds the maximum capacity for this tour.' });
     }
-
-    await ensureAvailabilityForDate(connection, {
-      tourId: Number(tourID),
-      maxCapacity: Number(tour.maxCap),
-      date: normalizedDate,
-    });
 
     const [availabilityRows] = await connection.query(
       `
@@ -223,6 +220,67 @@ router.patch('/:id/cancel', requireAuth, async (req, res) => {
         [Number(booking.personCount), availabilityRows[0].availabilityID]
       );
     }
+
+    await connection.commit();
+
+    const updatedBooking = await fetchBookingById(pool, bookingId);
+    return res.json({ booking: updatedBooking });
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+});
+
+router.patch('/:id/simulate-payment', requireAuth, async (req, res) => {
+  const bookingId = Number(req.params.id);
+  const method = (req.body && req.body.method ? String(req.body.method) : 'Simulation Card').slice(0, 50);
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [rows] = await connection.query(
+      `
+        SELECT bookingID, userID, price, status
+        FROM Booking
+        WHERE bookingID = ?
+        LIMIT 1
+        FOR UPDATE
+      `,
+      [bookingId]
+    );
+
+    const booking = rows[0];
+    if (!booking) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Booking not found.' });
+    }
+
+    const canManage = booking.userID === req.user.id || req.user.role === 'admin';
+    if (!canManage) {
+      await connection.rollback();
+      return res.status(403).json({ error: 'You can only manage your own bookings.' });
+    }
+
+    if (booking.status === 'Cancelled') {
+      await connection.rollback();
+      return res.status(400).json({ error: 'Cancelled bookings cannot be paid.' });
+    }
+
+    await connection.query(
+      `
+        INSERT INTO Payment (bookingID, amount, method, success)
+        VALUES (?, ?, ?, TRUE)
+        ON DUPLICATE KEY UPDATE
+          amount = VALUES(amount),
+          method = VALUES(method),
+          success = VALUES(success),
+          date = CURRENT_TIMESTAMP
+      `,
+      [bookingId, Number(booking.price), method]
+    );
 
     await connection.commit();
 

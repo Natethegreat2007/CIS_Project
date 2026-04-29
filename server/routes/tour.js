@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { pool } = require('../db');
-const { ensureAvailabilityForMonth, ensureAvailabilityForRange, toIsoDateString } = require('../lib/availability');
+const { toIsoDateString } = require('../lib/availability');
 const { getTourById, listTours } = require('../lib/catalog');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
@@ -46,13 +46,6 @@ router.get('/:id/availability', async (req, res) => {
     return res.status(404).json({ error: 'Tour not found.' });
   }
 
-  await ensureAvailabilityForMonth(pool, {
-    tourId,
-    maxCapacity: tourRows[0].maxCap,
-    year,
-    month,
-  });
-
   const [rows] = await pool.query(
     `
       SELECT date, slots
@@ -92,11 +85,23 @@ router.post('/', requireAuth, requireRole('admin', 'operator'), async (req, res)
     cap,
     location,
     imagePath,
+    availableDates,
   } = req.body;
 
-  if (!attrID || !name || !description || !durationHours || !price || !cap) {
-    return res.status(400).json({ error: 'Attraction, name, description, duration, price, and capacity are required.' });
+  if (!attrID || !name || !description || !durationHours || !price || !cap || !Array.isArray(availableDates) || !availableDates.length) {
+    return res.status(400).json({ error: 'Attraction, name, description, duration, price, capacity, and available dates are required.' });
   }
+  const todayIso = toIsoDateString(new Date());
+  const normalizedDates = Array.from(new Set(
+    availableDates
+      .map((date) => `${date || ''}`.trim())
+      .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= todayIso)
+  )).sort();
+
+  if (!normalizedDates.length) {
+    return res.status(400).json({ error: 'Please select at least one future available date.' });
+  }
+
 
   const connection = await pool.getConnection();
   try {
@@ -136,17 +141,13 @@ router.post('/', requireAuth, requireRole('admin', 'operator'), async (req, res)
       ]
     );
 
-    const today = new Date();
-    await ensureAvailabilityForRange(connection, {
-      tourId: result.insertId,
-      maxCapacity: Number(cap),
-      startDate: toIsoDateString(today),
-      endDate: toIsoDateString(new Date(Date.UTC(
-        today.getUTCFullYear(),
-        today.getUTCMonth(),
-        today.getUTCDate() + 180
-      ))),
-    });
+    await connection.query(
+      `
+        INSERT INTO Availability (tourID, date, slots)
+        VALUES ?
+      `,
+      [normalizedDates.map((date) => [result.insertId, date, Number(cap)])]
+    );
 
     await connection.commit();
 

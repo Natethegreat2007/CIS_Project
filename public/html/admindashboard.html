@@ -128,6 +128,20 @@ h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(
 .edit-btn { background: #fbc02d; color: #1a4d2e; border: none; padding: 10px 22px; border-radius: 10px; font-family: 'Luckiest Guy'; cursor: pointer; font-size: 18px; box-shadow: 0 4px 0 #b8860b; transition: 0.1s; }
 .edit-btn:hover { background: #f5b800; }
 .edit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #b8860b; }
+.image-add {
+    border: 3px dashed rgba(251,192,45,0.5);
+    border-radius: 14px;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    background: rgba(0,0,0,0.18);
+}
+.image-add span { color: rgba(255,255,0,0.65); font-size: 16px; }
+#attrPreview { width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; inset: 0; }
 
 </style>
 </head>
@@ -169,6 +183,12 @@ h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(
     <div class="input-item">
       <label>Attraction Description:</label>
       <textarea id="attrDesc" placeholder="Enter.."></textarea>
+      <label>Attraction Image:</label>
+      <div class="image-add" onclick="document.getElementById('attrImageInput').click()">
+        <span id="attrImageHint">Click to add an image</span>
+        <img id="attrPreview" alt="Attraction preview">
+        <input type="file" id="attrImageInput" hidden accept="image/*">
+      </div>
     </div>
   </div>
   <button class="ybtn" style="margin-top:20px;" onclick="createAttraction()">CREATE ATTRACTION</button>
@@ -178,6 +198,18 @@ h2 { font-size: 32px; text-shadow: 2px 2px black; border-bottom: 2px solid rgba(
 </div>
 <script src="tt-data.js"></script>
 <script>
+document.getElementById('attrImageInput').addEventListener('change', function() {
+  var file = this.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('attrPreview').src = e.target.result;
+    document.getElementById('attrPreview').style.display = 'block';
+    document.getElementById('attrImageHint').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
 function renderUsers(users) {
   document.getElementById('userManager').innerHTML = users.map(function(user) {
     return '<div class="user-card">' +
@@ -202,7 +234,8 @@ async function createAttraction() {
       category: t,
       price: Number(p),
       description: d,
-      location: 'Belize'
+      location: 'Belize',
+      imagePath: document.getElementById('attrPreview').style.display === 'block' ? document.getElementById('attrPreview').src : '/images/jungle-bg3.jpg'
     });
 
     var al = document.getElementById('createAlert');
@@ -212,6 +245,9 @@ async function createAttraction() {
     document.getElementById('attrType').value = '';
     document.getElementById('attrPrice').value = '';
     document.getElementById('attrDesc').value = '';
+    document.getElementById('attrImageInput').value = '';
+    document.getElementById('attrPreview').style.display = 'none';
+    document.getElementById('attrImageHint').style.display = 'block';
   } catch (error) {
     alert(error.message || 'Unable to create attraction.');
   }

@@ -17,13 +17,14 @@ app.use('/api/reviews', require('./routes/review'));
 app.use('/api/operators', require('./routes/operator'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/emergency', require('./routes/emergency'));
 
 app.get('/api/test', (req, res) => {
   res.status(200).json({ message: 'Tourist Tome API is alive' });
 });
 
 app.get('/', (req, res) => {
-  res.redirect('/html/login.html');
+  res.redirect('/html/landing.html');
 });
 
 app.use(express.static(path.join(__dirname, '..', 'public')));

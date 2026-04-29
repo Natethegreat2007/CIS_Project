@@ -87,6 +87,8 @@ function mapBooking(row) {
     tourDate: row.tourDate,
     personCount: Number(row.personCount),
     paymentMethod: row.paymentMethod,
+    paymentSuccess: row.paymentSuccess === null || row.paymentSuccess === undefined ? null : Boolean(row.paymentSuccess),
+    paymentDate: row.paymentDate || null,
     total: Number(row.total),
     season: row.season,
     status: row.status,

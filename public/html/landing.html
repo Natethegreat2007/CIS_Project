@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tourist Tome - Welcome</title>
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #1a4d2e;
+      background-image:
+        radial-gradient(circle at 20% 10%, rgba(251,192,45,0.18), transparent 40%),
+        radial-gradient(circle at 80% 40%, rgba(205,220,57,0.18), transparent 45%),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
+      background-size: auto, auto, 40px 100%;
+      font-family: 'Luckiest Guy', cursive;
+      color: #ffff00;
+      min-height: 100vh;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(13,51,32,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 4px solid #fbc02d;
+      display: flex; align-items: center;
+      padding: 0 26px; height: 74px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nav-logo img { height: 46px; width: auto; }
+    .nav-logo span { font-size: 1.5rem; color: yellow; text-shadow: 2px 2px black; letter-spacing: 2px; }
+    .nav-links { margin-left: 24px; display: flex; gap: 6px; align-items: center; }
+    .nav-links a {
+      color: rgba(255,255,0,0.7); text-decoration: none;
+      font-size: 1rem; letter-spacing: 1px;
+      padding: 8px 14px; border-radius: 10px; transition: 0.18s;
+    }
+    .nav-links a:hover { background: rgba(255,255,0,0.12); color: yellow; }
+    .nav-cta { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .pill {
+      border: 2px solid rgba(251,192,45,0.65);
+      background: rgba(0,0,0,0.15);
+      color: rgba(255,255,0,0.85);
+      padding: 8px 14px; border-radius: 999px;
+      font-family: 'Luckiest Guy', cursive;
+      cursor: pointer; letter-spacing: 1px;
+      transition: 0.15s;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .pill:hover { border-color: #fbc02d; background: rgba(251,192,45,0.12); color: yellow; }
+    .pill.primary {
+      background: #fbc02d; color: #1a4d2e;
+      border-color: black;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+    }
+    .pill.primary:hover { background: #ffcf4c; }
+    .pill.primary:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 36px 26px 60px; }
+    .hero {
+      border-radius: 20px;
+      border: 3px solid rgba(251,192,45,0.3);
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(13,51,32,0.75), rgba(13,51,32,0.25)),
+        url("../images/reef.jpg");
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+    }
+    .hero-inner {
+      padding: 40px 34px;
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 24px;
+      align-items: center;
+    }
+    .hero h1 { font-size: clamp(44px, 5vw, 70px); text-shadow: 5px 5px black; line-height: 0.95; }
+    .hero p { margin-top: 14px; color: rgba(255,255,255,0.7); font-family: Arial, sans-serif; line-height: 1.55; font-size: 16px; max-width: 640px; }
+    .hero-actions { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .hero-card {
+      background: rgba(0,0,0,0.35);
+      border: 2px solid rgba(205,220,57,0.35);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .hero-card h3 { font-size: 22px; color: #cddc39; margin-bottom: 10px; text-shadow: 2px 2px black; }
+    .hero-card ul { list-style: none; display: grid; gap: 10px; }
+    .hero-card li { color: rgba(255,255,0,0.85); font-size: 16px; }
+    .hero-card li span { color: rgba(255,255,255,0.65); font-family: Arial, sans-serif; font-size: 13px; display: block; margin-top: 2px; line-height: 1.4; }
+
+    .section { margin-top: 34px; }
+    .section-title {
+      font-size: 38px; text-shadow: 3px 3px black;
+      border-bottom: 2px solid rgba(255,255,0,0.2);
+      padding-bottom: 10px; margin-bottom: 18px;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .feature {
+      background: rgba(0,0,0,0.22);
+      border: 2px solid rgba(251,192,45,0.25);
+      border-radius: 16px;
+      padding: 16px;
+      transition: 0.18s;
+    }
+    .feature:hover { transform: translateY(-4px); border-color: rgba(251,192,45,0.55); box-shadow: 0 14px 30px rgba(0,0,0,0.35); }
+    .feature h4 { font-size: 22px; color: yellow; text-shadow: 2px 2px black; margin-bottom: 8px; }
+    .feature p { color: rgba(255,255,255,0.7); font-family: Arial, sans-serif; font-size: 14px; line-height: 1.55; }
+
+    .places {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .place {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 2px solid rgba(251,192,45,0.25);
+      background: rgba(0,0,0,0.22);
+      transition: 0.18s;
+    }
+    .place:hover { transform: translateY(-4px); border-color: rgba(251,192,45,0.65); }
+    .place img { width: 100%; height: 150px; object-fit: cover; display: block; }
+    .place-body { padding: 14px; }
+    .place-title { font-size: 22px; text-shadow: 2px 2px black; margin-bottom: 6px; }
+    .place-desc { color: rgba(255,255,255,0.7); font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5; }
+
+    .footer {
+      margin-top: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-top: 2px solid rgba(255,255,0,0.15);
+      padding-top: 16px;
+      color: rgba(255,255,0,0.6);
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .features { grid-template-columns: 1fr; }
+      .places { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="landing.html">
+      <img src="../images/logo.png" alt="Tourist Tome" />
+      <span>TOURIST TOME</span>
+    </a>
+    <div class="nav-links">
+      <a href="landing.html">PLATFORM</a>
+      <a href="emergency.html">SAFETY</a>
+    </div>
+    <div class="nav-cta">
+      <a class="pill" href="login.html">LOGIN</a>
+      <a class="pill primary" href="register.html">GET STARTED</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-inner">
+        <div>
+          <h1>DISCOVER BELIZE<br>WITH CONFIDENCE</h1>
+          <p>
+            Tourist Tome is your all-in-one platform to explore attractions, book tours, review experiences,
+            and stay connected to safety resources while you travel.
+          </p>
+          <div class="hero-actions">
+            <a class="pill primary" href="register.html">CREATE AN ACCOUNT</a>
+            <a class="pill" href="login.html">SIGN IN</a>
+            <a class="pill" href="emergency.html">EMERGENCY SERVICES</a>
+          </div>
+        </div>
+        <aside class="hero-card">
+          <h3>What you can do</h3>
+          <ul>
+            <li>Book tours fast<span>See availability, select dates, and confirm bookings in seconds.</span></li>
+            <li>Review & rate<span>Help other travelers with trusted, community-driven feedback.</span></li>
+            <li>Stay safe<span>Quick access to emergency hotlines and local medical facilities.</span></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" aria-label="Features">
+      <div class="section-title">FEATURES</div>
+      <div class="features">
+        <div class="feature">
+          <h4>Attractions Directory</h4>
+          <p>Browse Belize’s top destinations with clean, visual cards and details that help you choose confidently.</p>
+        </div>
+        <div class="feature">
+          <h4>Tour Booking</h4>
+          <p>Select a tour, pick a date, and confirm your reservation with seasonal pricing support.</p>
+        </div>
+        <div class="feature">
+          <h4>Visitor Safety</h4>
+          <p>Emergency Services integration surfaces Belize Police, Tourist Police, and medical facilities by district.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-label="Popular places">
+      <div class="section-title">POPULAR PLACES</div>
+      <div class="places">
+        <article class="place">
+          <img src="../images/bluehole.jpg" alt="Great Blue Hole" />
+          <div class="place-body">
+            <div class="place-title">Great Blue Hole</div>
+            <div class="place-desc">A world-famous marine sinkhole and bucket-list dive experience.</div>
+          </div>
+        </article>
+        <article class="place">
+          <img src="../images/caracol.jpg" alt="Caracol" />
+          <div class="place-body">
+            <div class="place-title">Caracol</div>
+            <div class="place-desc">Explore vast Maya ruins deep in the rainforest with epic views from the temples.</div>
+          </div>
+        </article>
+        <article class="place">
+          <img src="../images/Cockscomb.jpg" alt="Cockscomb Basin" />
+          <div class="place-body">
+            <div class="place-title">Cockscomb Basin</div>
+            <div class="place-desc">Hike, swim, and spot wildlife in Belize’s iconic jaguar reserve.</div>
+          </div>
+        </article>
+        <article class="place">
+          <img src="../images/Lamanai.jpg" alt="Lamanai" />
+          <div class="place-body">
+            <div class="place-title">Lamanai</div>
+            <div class="place-desc">A river journey to ancient ruins surrounded by nature and history.</div>
+          </div>
+        </article>
+        <article class="place">
+          <img src="../images/maya-temple.jpg" alt="Maya Temples" />
+          <div class="place-body">
+            <div class="place-title">Maya Temples</div>
+            <div class="place-desc">From towering pyramids to hidden sites—discover centuries of culture.</div>
+          </div>
+        </article>
+        <article class="place">
+          <img src="../images/reef.jpg" alt="Belize Barrier Reef" />
+          <div class="place-body">
+            <div class="place-title">Belize Barrier Reef</div>
+            <div class="place-desc">Snorkel coral gardens, swim with rays, and enjoy vibrant island life.</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>Tourist Tome</div>
+      <div>Belize travel planning • Booking • Reviews • Safety</div>
+    </footer>
+  </main>
+</body>
+</html>
+

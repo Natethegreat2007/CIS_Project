@@ -66,6 +66,96 @@ tbody tr:hover td { background: rgba(255,255,255,0.03); }
     cursor: pointer; transition: 0.15s;
 }
 .cancel-btn:hover { background: rgba(255,82,82,0.3); }
+.booking-row { cursor: pointer; }
+.booking-row:hover td { background: rgba(255,255,255,0.06); }
+.receipt-hint {
+    color: rgba(255,255,0,0.55);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 999;
+}
+.modal-overlay.show { display: flex; }
+.receipt-modal {
+    width: min(720px, 100%);
+    border: 4px solid #fbc02d;
+    border-radius: 18px;
+    background: #0d3320;
+    color: #fefefe;
+    box-shadow: 0 18px 48px rgba(0,0,0,0.45);
+    overflow: hidden;
+}
+.receipt-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 2px solid rgba(251,192,45,0.25);
+    background: rgba(0,0,0,0.2);
+}
+.receipt-title { font-size: 24px; color: #ffff00; text-shadow: 2px 2px #000; }
+.receipt-close {
+    border: 2px solid #fbc02d;
+    background: transparent;
+    color: #ffff00;
+    border-radius: 10px;
+    font-family: 'Luckiest Guy';
+    font-size: 13px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+.receipt-body { padding: 18px 20px; }
+.receipt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+}
+.receipt-item { border-bottom: 1px dashed rgba(251,192,45,0.25); padding-bottom: 8px; }
+.receipt-item b { color: #cddc39; display: block; margin-bottom: 3px; font-size: 13px; letter-spacing: 0.4px; }
+.receipt-total {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 2px solid rgba(251,192,45,0.4);
+    display: flex;
+    justify-content: space-between;
+    color: #ffff00;
+    font-size: 21px;
+}
+.receipt-actions {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.receipt-select {
+    background: transparent;
+    border: 2px solid #fbc02d;
+    color: #ffff00;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-family: 'Luckiest Guy';
+}
+.pay-btn {
+    border: none;
+    background: #ffff00;
+    color: #1a4d2e;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-family: 'Luckiest Guy';
+    cursor: pointer;
+    box-shadow: 0 3px 0 #888800;
+}
+.pay-msg { font-size: 14px; color: #e0e0e0; }
 </style>
 </head>
 <body>
@@ -80,6 +170,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.03); }
     <a href="tours.html">ATTRACTION</a>
     <a href="bookings.html">BOOK TOUR</a>
     <a href="mybookings.html" class="active">MYBOOKING</a>
+    <a href="emergency.html">SAFETY</a>
     <a href="Review.html">REVIEWS</a>
   </div>
   <div class="nav-right">
@@ -94,13 +185,34 @@ tbody tr:hover td { background: rgba(255,255,255,0.03); }
       <div class="page-title">MY BOOKINGS:</div>
       <input type="text" id="searchInput" class="booking-search" placeholder="Search bookings...">
     </div>
+    <div class="receipt-hint">Click any booking row to view a receipt and payment details.</div>
     <div id="tableWrap"></div>
+  </div>
+</div>
+
+<div id="receiptModal" class="modal-overlay" onclick="closeReceiptOnOverlay(event)">
+  <div class="receipt-modal">
+    <div class="receipt-head">
+      <div class="receipt-title">BOOKING RECEIPT</div>
+      <button class="receipt-close" onclick="closeReceipt()">CLOSE</button>
+    </div>
+    <div class="receipt-body" id="receiptBody"></div>
   </div>
 </div>
 
 <script src="tt-data.js"></script>
 <script>
 var allBookings = [];
+var activeBookingId = null;
+
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 function render(filter) {
     var bkgs = allBookings.slice();
@@ -123,7 +235,7 @@ function render(filter) {
         '</tr></thead><tbody>' +
         bkgs.map(function(b, i) {
             var d = new Date(b.tourDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-            return '<tr>' +
+            return '<tr class="booking-row" onclick="openReceipt(' + b.id + ')">' +
                 '<td>' + (i+1) + '</td>' +
                 '<td>' + b.tourName + '</td>' +
                 '<td>' + b.attraction + '</td>' +
@@ -133,18 +245,95 @@ function render(filter) {
                 '<td style="color:#cddc39">$' + b.total + '</td>' +
                 '<td><span class="status-pill ' + b.status + '">' + b.status.toUpperCase() + '</span></td>' +
                 '<td>' + (b.status === 'Confirmed' ?
-                    '<button class="cancel-btn" onclick="cancelBooking(' + b.id + ')">CANCEL</button>' : '') + '</td>' +
+                    '<button class="cancel-btn" onclick="cancelBooking(event,' + b.id + ')">CANCEL</button>' : '') + '</td>' +
             '</tr>';
         }).join('') +
         '</tbody></table>';
 }
 
-async function cancelBooking(id) {
+function findBookingById(id) {
+    return allBookings.find(function(item) { return item.id === Number(id); });
+}
+
+function closeReceiptOnOverlay(event) {
+    if (event.target.id === 'receiptModal') closeReceipt();
+}
+
+function closeReceipt() {
+    activeBookingId = null;
+    document.getElementById('receiptModal').classList.remove('show');
+}
+
+function openReceipt(id) {
+    var booking = findBookingById(id);
+    if (!booking) return;
+
+    activeBookingId = booking.id;
+
+    var tourDate = new Date(booking.tourDate).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    var bookingDate = booking.bookedAt ? new Date(booking.bookedAt).toLocaleString('en-US') : 'N/A';
+    var paymentDate = booking.paymentDate ? new Date(booking.paymentDate).toLocaleString('en-US') : 'N/A';
+    var paymentState = booking.paymentSuccess ? 'Paid' : 'Awaiting simulation';
+    var paymentMethod = booking.paymentMethod || 'Not selected';
+
+    var paymentControls = '';
+    if (booking.status !== 'Cancelled' && !booking.paymentSuccess) {
+        paymentControls = '<div class="receipt-actions">' +
+            '<select id="payMethodSelect" class="receipt-select">' +
+                '<option value="Simulation Card">Simulation Card</option>' +
+                '<option value="Simulation Cash">Simulation Cash</option>' +
+                '<option value="Simulation Bank Transfer">Simulation Bank Transfer</option>' +
+            '</select>' +
+            '<button class="pay-btn" onclick="simulatePayment()">Simulate Payment</button>' +
+            '<span class="pay-msg">No real charge is made.</span>' +
+            '</div>';
+    }
+
+    document.getElementById('receiptBody').innerHTML =
+        '<div class="receipt-grid">' +
+            '<div class="receipt-item"><b>Receipt #</b>' + booking.id + '</div>' +
+            '<div class="receipt-item"><b>Status</b>' + escapeHtml(booking.status) + '</div>' +
+            '<div class="receipt-item"><b>Tour</b>' + escapeHtml(booking.tourName) + '</div>' +
+            '<div class="receipt-item"><b>Attraction</b>' + escapeHtml(booking.attraction) + '</div>' +
+            '<div class="receipt-item"><b>Location</b>' + escapeHtml(booking.location) + '</div>' +
+            '<div class="receipt-item"><b>Tour Date</b>' + tourDate + '</div>' +
+            '<div class="receipt-item"><b>Booked On</b>' + bookingDate + '</div>' +
+            '<div class="receipt-item"><b>Persons</b>' + booking.personCount + '</div>' +
+            '<div class="receipt-item"><b>Season</b>' + escapeHtml(booking.season || 'Standard') + '</div>' +
+            '<div class="receipt-item"><b>Payment Status</b>' + paymentState + '</div>' +
+            '<div class="receipt-item"><b>Payment Method</b>' + escapeHtml(paymentMethod) + '</div>' +
+            '<div class="receipt-item"><b>Payment Date</b>' + paymentDate + '</div>' +
+        '</div>' +
+        '<div class="receipt-total"><span>TOTAL</span><span>$' + booking.total + '</span></div>' +
+        paymentControls;
+
+    document.getElementById('receiptModal').classList.add('show');
+}
+
+async function simulatePayment() {
+    if (!activeBookingId) return;
+    var method = document.getElementById('payMethodSelect');
+    var selectedMethod = method ? method.value : 'Simulation Card';
+    try {
+        await TT.bookings.simulatePayment(activeBookingId, selectedMethod);
+        allBookings = await TT.bookings.mine();
+        render(document.getElementById('searchInput').value);
+        openReceipt(activeBookingId);
+    } catch (error) {
+        alert(error.message || 'Unable to simulate payment right now.');
+    }
+}
+
+async function cancelBooking(event, id) {
+    event.stopPropagation();
     if (!confirm('Cancel this booking?')) return;
     try {
         await TT.bookings.cancel(id);
         allBookings = await TT.bookings.mine();
         render(document.getElementById('searchInput').value);
+        if (activeBookingId === Number(id)) {
+            openReceipt(id);
+        }
     } catch (error) {
         alert(error.message || 'Unable to cancel that booking.');
     }
