@@ -12,3 +12,5 @@
 .env
 /postman
 .postman
+/dist
+/server/stub_utils
